@@ -111,7 +111,7 @@ void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
 
 void large_sub(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     release_large_int(result);
-    unsigned long
+    unsigned long carry = 0;
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
