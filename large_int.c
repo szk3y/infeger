@@ -90,7 +90,7 @@ static unsigned int hex_char_to_uint(char hex_char) {
 }
 
 // result = operand1 + operand2
-void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
+static void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     release_large_int(result);
     unsigned long carry = 0;
     Node* iter1 = operand1->unsigned_value.last;
@@ -109,7 +109,7 @@ void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     }
 }
 
-void large_sub(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
+static void large_sub(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     release_large_int(result);
     unsigned long carry = 0;
 }
