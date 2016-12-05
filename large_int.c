@@ -96,7 +96,9 @@ void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     Node* iter1 = operand1->unsigned_value.last;
     Node* iter2 = operand2->unsigned_value.last;
     while(iter1 != NULL || iter2 != NULL || carry != 0) {
-        long new_value = (long)securely_get_value(iter1) + securely_get_value(iter2) + carry;
+        unsigned long new_value =
+            (unsigned long)securely_get_value(iter1) +
+            (unsigned long)securely_get_value(iter2) + carry;
 #ifdef DEBUG
         printf("%016lx\n", new_value);
 #endif
