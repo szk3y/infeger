@@ -114,6 +114,20 @@ static void large_sub(LargeInt* operand1, LargeInt* operand2, LargeInt* result) 
     unsigned long carry = 0;
 }
 
+// former < latterを返す
+static int is_less_than(LargeInt* former, LargeInt* latter) {
+    if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
+        return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
+    Node* former_node = former->unsigned_value.head;
+    Node* latter_node = latter->unsigned_value.head;
+    // ノードがまだ残っていて，値が等しいときは次のノードにいく
+    while(former_node != NULL && former_node->key == latter_node->key) {
+        former_node = former_node->next_node;
+        latter_node = latter_node->next_node;
+    }
+    return securely_get_value(former_node) < securely_get_value(latter_node);
+}
+
 // LargeIntのunsigned_valueからhex_stringを更新する
 void update_hex_string(LargeInt* large_int) {
     if(large_int->hex_string != NULL)
