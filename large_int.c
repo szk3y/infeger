@@ -90,6 +90,7 @@ static unsigned int hex_char_to_uint(char hex_char) {
 }
 
 // result = operand1 + operand2
+// 符号は気にせず加算を行う
 static void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
     release_large_int(result);
     unsigned long carry = 0;
