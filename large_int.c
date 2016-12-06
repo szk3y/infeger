@@ -105,9 +105,6 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
         unsigned long new_value =
             (unsigned long)securely_get_value(iter1) +
             (unsigned long)securely_get_value(iter2) + carry;
-#ifdef DEBUG
-        printf("new_value = %016lx\n", new_value);
-#endif
         // new_valueの下半分を取り出して代入
         push_front(&buffer->unsigned_value, (unsigned int)new_value);
         // new_valueの上半分を桁上げとして保存
