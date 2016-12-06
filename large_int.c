@@ -22,7 +22,7 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
 
     int length = kHexDigitsInUInt;
     // 文字列が負のとき，iは1から始まる．
-    for(int i = large_int->is_negative; i < strlen(hex_string); i = i + length) {
+    for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
         if(i == large_int->is_negative && strlen(hex_string) % kHexDigitsInUInt != 0) {
             length = strlen(hex_string) % kHexDigitsInUInt;
         } else {
@@ -101,7 +101,7 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
             (unsigned long)securely_get_value(iter1) +
             (unsigned long)securely_get_value(iter2) + carry;
 #ifdef DEBUG
-        printf("%016lx\n", new_value);
+        printf("new_value = %016lx\n", new_value);
 #endif
         push_front(&result->unsigned_value, (unsigned int)new_value);
         carry = new_value >> (sizeof(unsigned int) * 8);
@@ -240,44 +240,35 @@ void print_binary(LargeInt* large_int) {
 #ifdef DEBUG
 int main() {
     char buffer[256];
-    LargeInt large_int;
-    init_large_int(&large_int);
+    LargeInt large_int_1;
+    init_large_int(&large_int_1);
     scanf("%s", buffer);
-    printf("length: %lu\n", strlen(buffer));
-    printf("zero:   %lu\n", (8 - strlen(buffer) % 8) % 8);
-    hex_string_to_large_int(buffer, &large_int);
-    printf("0x");
-    for(Node* iter = large_int.unsigned_value.head; iter != NULL; iter = iter->next_node) {
-        printf("%08x", iter->key);
-    }
-    puts("");
+    hex_string_to_large_int(buffer, &large_int_1);
+    update_hex_string(&large_int_1);
+    printf("large_int_1 = 0x");
+    print_hex(&large_int_1);
 
-    LargeInt addition;
-    init_large_int(&addition);
+    LargeInt large_int_2;
+    init_large_int(&large_int_2);
     scanf("%s", buffer);
-    hex_string_to_large_int(buffer, &addition);
+    hex_string_to_large_int(buffer, &large_int_2);
+    update_hex_string(&large_int_2);
+    printf("large_int_2 = 0x");
+    print_hex(&large_int_2);
 
     LargeInt result;
     init_large_int(&result);
-    puts("Computing large addition...");
-    large_add(&large_int, &addition, &result);
-    puts("Done!");
-    printf("0x");
-    printf("%x\n", result.unsigned_value.head->key);
-    printf("0x");
-    for(Node* iter = result.unsigned_value.head; iter != NULL; iter = iter->next_node) {
-        printf("%x", iter->key);
-    }
-    puts("");
+    large_add(&large_int_1, &large_int_2, &result);
+
     update_hex_string(&result);
+    printf("result = 0x");
     print_hex(&result);
-    puts("Computing binary string...");
     update_binary_string(&result);
-    puts("Done!");
+    printf("result = 0b");
     print_binary(&result);
 
-    release_large_int(&large_int);
-    release_large_int(&addition);
+    release_large_int(&large_int_1);
+    release_large_int(&large_int_2);
     release_large_int(&result);
     return 0;
 }
