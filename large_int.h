@@ -13,6 +13,7 @@ typedef struct {
 } LargeInt;
 
 void init_large_int(LargeInt*); // LargeIntは最初に必ずこの関数で初期化する
+void copy_large_int(LargeInt*, LargeInt*); // copy_large_int(a,b) => b = a
 void hex_string_to_large_int(char*, LargeInt*);
 void update_hex_string(LargeInt*);
 void update_binary_string(LargeInt*);

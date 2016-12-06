@@ -17,6 +17,10 @@ void init_large_int(LargeInt* large_int) {
     large_int->hex_string     = NULL;
 }
 
+void copy_large_int(LargeInt* origin, LargeInt* clone) {
+
+}
+
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     large_int->is_negative = (hex_string[0] == '-');
 
@@ -131,7 +135,7 @@ static int is_less_than(LargeInt* former, LargeInt* latter) {
         return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
     Node* former_node = former->unsigned_value.head;
     Node* latter_node = latter->unsigned_value.head;
-    // ノードがまだ残っていて，値が等しいときは次のノードにいく
+    // 値が等しいときは次のノードにいく
     while(former_node != NULL && former_node->key == latter_node->key) {
         former_node = former_node->next_node;
         latter_node = latter_node->next_node;
