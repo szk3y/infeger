@@ -92,7 +92,8 @@ static unsigned int hex_char_to_uint(char hex_char) {
 // result = former + latter
 // 符号は気にせず加算を行う
 static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    release_large_int(result);
+    LargeInt buffer;
+    init_large_int(&buffer);
     unsigned long carry = 0;
     Node* iter1 = former->unsigned_value.last;
     Node* iter2 = latter->unsigned_value.last;
@@ -103,11 +104,14 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
 #ifdef DEBUG
         printf("new_value = %016lx\n", new_value);
 #endif
-        push_front(&result->unsigned_value, (unsigned int)new_value);
+        // new_valueの下半分を取り出して代入
+        push_front(&buffer->unsigned_value, (unsigned int)new_value);
+        // new_valueの上半分を桁上げとして保存
         carry = new_value >> (sizeof(unsigned int) * 8);
         iter1 = securely_get_prev_node(iter1);
         iter2 = securely_get_prev_node(iter2);
     }
+    release_large_int(&result);
 }
 
 // former - latterを行う
