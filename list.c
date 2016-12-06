@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "list.h"
 
-#define DEBUG
-
 
 void init_node(Node* node) {
     node->key = 0;
@@ -44,9 +42,6 @@ void push_back(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc1");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
@@ -57,9 +52,6 @@ void push_back(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->last->next_node);
         // 新しいノードをリストの最後のノードとつなぐ
         list->last->next_node->prev_node = list->last;
@@ -77,9 +69,6 @@ void push_front(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
@@ -90,9 +79,6 @@ void push_front(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head->prev_node);
         // 新しいノードをリストの先頭のノードとつなぐ
         list->head->prev_node->next_node = list->head;
@@ -123,14 +109,8 @@ void release_list(List* list) {
     // 先頭以外のすべてのノードを開放する
     for(Node* iter = list->last->prev_node; iter != NULL; iter = iter->prev_node) {
         free(iter->next_node);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
     }
     free(list->head);
-#ifdef DEBUG
-    puts("free");
-#endif // DEBUG
     list->head = NULL;
     list->last = NULL;
 }
