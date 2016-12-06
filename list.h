@@ -14,6 +14,7 @@ typedef struct {
 
 void init_node(Node*); // Nodeは最初に必ずこの関数を使って初期化する
 void init_list(List*); // Listは最初に必ずこの関数を使って初期化する
+void copy_list(List*, List*); // copy_list(a,b) => b = a
 int is_empty(List*);
 int get_length(List*); // ノードの数を返す
 void push_back(List*, unsigned int); // Listの後ろに新しいノードをつける

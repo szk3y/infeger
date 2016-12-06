@@ -3,8 +3,6 @@
 #include <string.h>
 #include "large_int.h"
 
-#define DEBUG
-
 // unsigned intの16進数での桁数
 static const int kHexDigitsInUInt = sizeof(unsigned int) * 2;
 
@@ -18,7 +16,8 @@ void init_large_int(LargeInt* large_int) {
 }
 
 void copy_large_int(LargeInt* origin, LargeInt* clone) {
-
+    release_large_int(clone);
+    copy_list(&origin->unsigned_value, &clone->unsigned_value);
 }
 
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {

@@ -16,6 +16,13 @@ void init_list(List* list) {
     list->last = NULL;
 }
 
+void copy_list(List* origin, List* clone) {
+    release_list(clone);
+    for(Node* node = origin->head; node != NULL; node = node->next_node) {
+        push_back(clone, node->key);
+    }
+}
+
 int is_empty(List* list) {
     return list->head == NULL;
 }
