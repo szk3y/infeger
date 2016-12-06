@@ -111,13 +111,17 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
 }
 
 // former - latterを行う
-// former < latterのときはlatter - formerをして符号を反転させる
+// |former| < |latter|のときはlarge_sub(latter, former, result)する
 static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     release_large_int(result);
-    unsigned long carry = 0;
+    if(is_less_than(former, latter)) {
+        large_sub(latter, former, result);
+        return;
+    }
+
 }
 
-// former < latterを返す
+// |former| < |latter|を返す
 static int is_less_than(LargeInt* former, LargeInt* latter) {
     if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
         return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
