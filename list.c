@@ -113,14 +113,6 @@ unsigned int securely_get_value(Node* current_node) {
 void release_list(List* list) {
     if(is_empty(list))
         return;
-    // リストの要素が一つしかないとき
-    if(list->head == list->last) {
-        free(list->head);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
-        return;
-    }
     // 先頭以外のすべてのノードを開放する
     for(Node* iter = list->last->prev_node; iter != NULL; iter = iter->prev_node) {
         free(iter->next_node);
