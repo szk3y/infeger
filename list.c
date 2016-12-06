@@ -45,7 +45,7 @@ void push_back(List* list, unsigned int key) {
             exit(1);
         }
 #ifdef DEBUG
-        puts("malloc");
+        puts("malloc1");
 #endif // DEBUG
         init_node(list->head);
         list->last = list->head;
@@ -131,4 +131,6 @@ void release_list(List* list) {
 #ifdef DEBUG
     puts("free");
 #endif // DEBUG
+    list->head = NULL;
+    list->last = NULL;
 }
