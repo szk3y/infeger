@@ -110,6 +110,8 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     }
 }
 
+// former - latterを行う
+// former < latterのときはlatter - formerをして符号を反転させる
 static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     release_large_int(result);
     unsigned long carry = 0;
