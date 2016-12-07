@@ -20,4 +20,4 @@ test: test/test_list.c out/list.o out/large_int.o
 
 .PHONY: clean
 clean:
-	rm out/*
+	rm a.out *.o
