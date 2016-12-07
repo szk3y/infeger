@@ -8,8 +8,8 @@ list.o: list.c
 	gcc -c -W -Wall list.c
 
 .PHONY: test
-test: test_list.c list.o large_int.o
-	gcc -W -Wall -o test_list.out test_list.c list.o
+test: test_large_int.c list.o large_int.o
+	gcc -W -Wall test_large_int.c list.o large_int.o
 
 .PHONY: clean
 clean:
