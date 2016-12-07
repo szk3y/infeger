@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../main/list.h"
+#include "main/list.h"
 
 int main() {
     List list;
