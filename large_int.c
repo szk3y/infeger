@@ -94,7 +94,6 @@ static unsigned int hex_char_to_uint(char hex_char) {
 
 // result = former + latter
 // 符号は気にせず加算を行う
-// FIXME: large_add(a, b, a) => update_hex_string(a) => segmentation fault
 void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
@@ -227,12 +226,18 @@ static void reverse_string(char* string) {
 void release_large_int(LargeInt* large_int) {
     release_list(&large_int->unsigned_value);
 
-    if(large_int->decimal_string != NULL)
+    if(large_int->decimal_string != NULL) {
         free(large_int->decimal_string);
-    if(large_int->binary_string != NULL)
+        large_int->decimal_string = NULL;
+    }
+    if(large_int->binary_string != NULL) {
         free(large_int->binary_string);
-    if(large_int->hex_string != NULL)
+        large_int->binary_string = NULL;
+    }
+    if(large_int->hex_string != NULL) {
         free(large_int->hex_string);
+        large_int->hex_string = NULL;
+    }
 }
 
 void print_hex(LargeInt* large_int) {
