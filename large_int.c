@@ -95,12 +95,14 @@ static unsigned int hex_char_to_uint(char hex_char) {
 // result = former + latter
 // 符号は気にせず加算を行う
 void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    // large_add(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
     init_large_int(&buffer);
     unsigned long carry = 0;
     Node* former_node = former->unsigned_value.last;
     Node* latter_node = latter->unsigned_value.last;
     while(former_node != NULL || latter_node != NULL || carry != 0) {
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
         unsigned long new_value =
             (unsigned long)securely_get_value(former_node) +
             (unsigned long)securely_get_value(latter_node) + carry;
@@ -108,8 +110,9 @@ void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
         push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> (sizeof(unsigned int) * 8);
-        iter1 = securely_get_prev_node(former_node);
-        iter2 = securely_get_prev_node(latter_node);
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        former_node = securely_get_prev_node(former_node);
+        latter_node = securely_get_prev_node(latter_node);
     }
     copy_large_int(&buffer, result);
     release_large_int(&buffer);
@@ -122,9 +125,30 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
         large_sub(latter, former, result);
         return;
     }
+    // large_sub(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
     init_large_int(&buffer);
-
+    Node* former_node = former->unsigned_value.last;
+    Node* latter_node = latter->unsigned_value.last;
+    unsigned long carry = 0;
+    // carry が残ることはない
+    while(former_node != NULL || latter_node != NULL) {
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        // 繰り下がりのぶんを予め足しておく
+        unsigned long new_value =
+            (1 << (kHexDigitsInUInt * 4)) +
+            (unsigned long)securely_get_value(former_node) -
+            (unsigned long)securely_get_value(latter_node) - carry;
+        // new_valueのした半分を取り出して代入
+        push_front(&buffer, (unsigned int)new_value);
+        // new_valueの上半分をみて繰り下がり判定
+        carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        former_node = securely_get_prev_node(former_node);
+        latter_node = securely_get_prev_node(latter_node);
+    }
+    copy_large_int(&buffer, result);
+    release_large_int(&buffer);
 }
 
 // |former| < |latter|を返す
