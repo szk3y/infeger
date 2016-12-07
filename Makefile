@@ -1,23 +1,16 @@
-all: list.o large_int.o
-	gcc -W -Wall main/main.c out/large_int.o out/list.o
-	mv a.out out
+all: main.c list.o large_int.o
+	gcc -W -Wall main.c large_int.o list.o
 
-out/large_int.o: main/large_int.c
-	gcc -c -W -Wall main/large_int.c
-	mv large_int.o out
+large_int.o: large_int.c
+	gcc -c -W -Wall large_int.c
 
-out/list.o: main/list.c
-	gcc -c -W -Wall main/list.c
-	mv list.o out
+list.o: list.c
+	gcc -c -W -Wall list.c
 
 .PHONY: test
-test: test/test_list.c out/list.o out/large_int.o
-	cp main/*.h test
-	gcc -W -Wall -o test_list test/test_list.c out/list.o
-	mv test_list out
-	# gcc -W -Wall -o test_large_int test/test_large_int.c out/large_int.o out/list.o
-	rm test/*.h
+test: test_list.c list.o large_int.o
+	gcc -W -Wall -o test_list.out test_list.c list.o
 
 .PHONY: clean
 clean:
-	rm a.out *.o
+	rm *.out *.o
