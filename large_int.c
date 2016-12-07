@@ -98,31 +98,32 @@ void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
     unsigned long carry = 0;
-    Node* iter1 = former->unsigned_value.last;
-    Node* iter2 = latter->unsigned_value.last;
-    while(iter1 != NULL || iter2 != NULL || carry != 0) {
+    Node* former_node = former->unsigned_value.last;
+    Node* latter_node = latter->unsigned_value.last;
+    while(former_node != NULL || latter_node != NULL || carry != 0) {
         unsigned long new_value =
-            (unsigned long)securely_get_value(iter1) +
-            (unsigned long)securely_get_value(iter2) + carry;
+            (unsigned long)securely_get_value(former_node) +
+            (unsigned long)securely_get_value(latter_node) + carry;
         // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> (sizeof(unsigned int) * 8);
-        iter1 = securely_get_prev_node(iter1);
-        iter2 = securely_get_prev_node(iter2);
+        iter1 = securely_get_prev_node(former_node);
+        iter2 = securely_get_prev_node(latter_node);
     }
     copy_large_int(&buffer, result);
     release_large_int(&buffer);
 }
 
 // former - latterを行う
-// |former| < |latter|のときはlarge_sub(latter, former, result)する
 static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    release_large_int(result);
+    // |former| < |latter|のときはlarge_sub(latter, former, result)する
     if(is_less_than(former, latter)) {
         large_sub(latter, former, result);
         return;
     }
+    LargeInt buffer;
+    init_large_int(&buffer);
 
 }
 
