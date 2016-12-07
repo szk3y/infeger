@@ -94,7 +94,7 @@ static unsigned int hex_char_to_uint(char hex_char) {
 
 // result = former + latter
 // 符号は気にせず加算を行う
-static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
+void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
     unsigned long carry = 0;
@@ -105,13 +105,14 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
             (unsigned long)securely_get_value(iter1) +
             (unsigned long)securely_get_value(iter2) + carry;
         // new_valueの下半分を取り出して代入
-        push_front(&buffer->unsigned_value, (unsigned int)new_value);
+        push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> (sizeof(unsigned int) * 8);
         iter1 = securely_get_prev_node(iter1);
         iter2 = securely_get_prev_node(iter2);
     }
-    release_large_int(&result);
+    copy_large_int(&buffer, result);
+    release_large_int(&buffer);
 }
 
 // former - latterを行う
