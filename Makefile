@@ -12,10 +12,12 @@ list.o:
 
 .PHONY: test
 test: list.o large_int.o
+	cp main/*.h test
 	gcc -W -Wall -o test_list test/test_list.c out/list.o
 	mv test_list out
 	# gcc -W -Wall -o test_large_int test/test_large_int.c out/large_int.o out/list.o
-
+	rm test/*.h
+	
 .PHONY: clean
 clean:
 	rm out/*
