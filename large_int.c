@@ -149,6 +149,7 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
 
 // former - latterを行う
 // 符号は全く気にしない
+// FIXME: 0x1ffffffff - 0x1 => 0x1ffffffff
 static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     // large_sub(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
@@ -164,7 +165,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
             (1 << (kHexDigitsInUInt * 4)) +
             (unsigned long)securely_get_value(former_node) -
             (unsigned long)securely_get_value(latter_node) - carry;
-        // new_valueのした半分を取り出して代入
+        // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分をみて繰り下がり判定
         carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
