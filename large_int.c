@@ -92,6 +92,25 @@ static unsigned int hex_char_to_uint(char hex_char) {
     }
 }
 
+// 符号に応じて加算か減算を行う
+void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    // 同符号の場合
+    if(former->is_negative == latter->is_negative) {
+        large_add(former, latter, result);
+        result->is_negative = former->is_negative;
+    // 異符号の場合
+    } else {
+        // |former| < |latter|のときはlarge_sub(latter, former, result)する
+        if(is_less_than(former, latter)) {
+            large_sub(latter, former, result);
+            result->is_negative = latter->is_negative;
+        } else {
+            large_sub(former, latter, result);
+            result->is_negative = former->is_negative;
+        }
+    }
+}
+
 // result = former + latter
 // 符号は気にせず加算を行う
 static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
@@ -119,12 +138,8 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
 }
 
 // former - latterを行う
+// 符号は全く気にしない
 static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    // |former| < |latter|のときはlarge_sub(latter, former, result)する
-    if(is_less_than(former, latter)) {
-        large_sub(latter, former, result);
-        return;
-    }
     // large_sub(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
     init_large_int(&buffer);
