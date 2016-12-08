@@ -4,7 +4,7 @@
 int main() {
     LargeInt former;
     init_large_int(&former);
-    hex_string_to_large_int("1ffffffff", &former);
+    hex_string_to_large_int("-1ffffffff", &former);
     update_hex_string(&former);
     print_hex(&former);
 
@@ -14,7 +14,7 @@ int main() {
     update_hex_string(&latter);
     print_hex(&latter);
 
-    large_add(&former, &latter, &latter);
+    large_plus(&former, &latter, &latter);
     update_hex_string(&latter);
     print_hex(&latter);
 

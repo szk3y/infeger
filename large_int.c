@@ -155,7 +155,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
             (unsigned long)securely_get_value(former_node) -
             (unsigned long)securely_get_value(latter_node) - carry;
         // new_valueのした半分を取り出して代入
-        push_front(&buffer, (unsigned int)new_value);
+        push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分をみて繰り下がり判定
         carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
         // 片方が短くてもぬるぽしないようにsecurely~を使う
