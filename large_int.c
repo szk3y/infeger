@@ -94,7 +94,7 @@ static unsigned int hex_char_to_uint(char hex_char) {
 
 // result = former + latter
 // 符号は気にせず加算を行う
-void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
+static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     // large_add(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
     init_large_int(&buffer);
