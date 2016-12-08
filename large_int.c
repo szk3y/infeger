@@ -158,7 +158,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     unsigned long carry = 0;
     // carry が残ることはない
     while(former_node != NULL || latter_node != NULL) {
-        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         // 繰り下がりのぶんを予め足しておく
         unsigned long new_value =
             (1 << (kHexDigitsInUInt * 4)) +
@@ -168,7 +168,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
         push_front(&buffer.unsigned_value, (unsigned int)new_value);
         // new_valueの上半分をみて繰り下がり判定
         carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
-        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         former_node = securely_get_prev_node(former_node);
         latter_node = securely_get_prev_node(latter_node);
     }
