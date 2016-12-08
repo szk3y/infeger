@@ -3,6 +3,14 @@
 #include <string.h>
 #include "large_int.h"
 
+static unsigned int word_to_uint(char*, int, int);
+static unsigned int hex_char_to_uint(char);
+static void large_add(LargeInt*, LargeInt*, LargeInt*);
+static void large_sub(LargeInt*, LargeInt*, LargeInt*);
+static int is_less_than(LargeInt*, LargeInt*);
+static void swap(char*, char*);
+static void reverse_string(char*);
+
 // unsigned intの16進数での桁数
 static const int kHexDigitsInUInt = sizeof(unsigned int) * 2;
 
@@ -21,13 +29,15 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
 }
 
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
+    release_large_int(large_int);
     large_int->is_negative = (hex_string[0] == '-');
 
     int length = kHexDigitsInUInt;
     // 文字列が負のとき，iは1から始まる．
     for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
-        if(i == large_int->is_negative && strlen(hex_string) % kHexDigitsInUInt != 0) {
-            length = strlen(hex_string) % kHexDigitsInUInt;
+        // 最初の処理は残りの桁数がunsigned intで割り切れるように調節する
+        if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
+            length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
         } else {
             length = kHexDigitsInUInt;
         }

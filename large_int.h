@@ -24,11 +24,3 @@ void print_number(LargeInt*);
 int get_digit(LargeInt*);
 void print_hex(LargeInt*);
 void print_binary(LargeInt*);
-
-static unsigned int word_to_uint(char*, int, int);
-static unsigned int hex_char_to_uint(char);
-static void large_add(LargeInt*, LargeInt*, LargeInt*);
-static void large_sub(LargeInt*, LargeInt*, LargeInt*);
-static int is_less_than(LargeInt*, LargeInt*);
-static void swap(char*, char*);
-static void reverse_string(char*);
