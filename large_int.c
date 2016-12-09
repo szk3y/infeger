@@ -139,6 +139,7 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
 }
 
 // FIXME: 0の処理
+// bufferやtmpのような名前が2つ出そうになったので変数名にorigin,cloneを使ってみた
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     // releaseのタイミングがややこしくなりそうなので符号を先に決めておく
     int is_negative = former->is_negative == latter->is_negative;
@@ -179,7 +180,7 @@ static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* 
 }
 
 // LargeIntの末尾に0のノードをnum_of_zero_nodesだけつける．
-// uint32_t一つ分左シフトしたことになる
+// push_back一回でuint32_t一つ分左シフトしたことになる
 static void push_back_zero_nodes(LargeInt* large_int, int num_of_zero_nodes) {
     for(int i = 0; i < num_of_zero_nodes; i++) {
         push_back(&large_int->unsigned_value, 0);
