@@ -12,6 +12,9 @@ static int is_less_than(LargeInt*, LargeInt*);
 static void swap(char*, char*);
 static void reverse_string(char*);
 static void remove_zero_nodes(LargeInt*);
+static void push_back_zero_nodes(LargeInt*, int);
+static void multiply_large_and_small(LargeInt*, uint32_t, LargeInt*);
+
 
 // uint32_tの16進数での桁数(8)
 static const int kHexDigitsInUInt = sizeof(uint32_t) * 2;
@@ -32,6 +35,7 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
     copy_list(&origin->unsigned_value, &clone->unsigned_value);
 }
 
+// FIXME: -0の処理．その他の関数においても-0を存在させないようにする
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     release_large_int(large_int);
     large_int->is_negative = (hex_string[0] == '-');
@@ -134,24 +138,51 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     large_plus(former, latter, result);
 }
 
-void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    LargeInt buffer;
-    init_large_int(&buffer);
-    uint64_t carry = 0;
+// FIXME: 0の処理
+void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
+    // releaseのタイミングがややこしくなりそうなので符号を先に決めておく
+    int is_negative = former->is_negative == latter->is_negative;
+    LargeInt origin;
+    init_large_int(&origin);
+    // HACK: uint何個分左シフトするかを数える．他の方法を考える
+    int counter = 0;
+    for(Node* node = latter->unsigned_value.head; node != NULL; node = node->next_node) {
+        LargeInt tmp;
+        init_large_int(&tmp);
+        // formerとlatterの一部をかけて結果をtmpに保存する
+        multiply_large_and_small(former, node->key, &tmp);
+        push_back_zero_nodes(&tmp, counter);
+        counter++;
+        large_add(&origin, &tmp, &origin);
+        release_large_int(&tmp);
+    }
+    copy_large_int(&origin, clone);
+    release_large_int(&origin);
+    clone->is_negative = is_negative;
 }
 
-void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
+static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
     uint64_t carry = 0;
     Node* arg_node = large->unsigned_value.last;
     while(arg_node != NULL || carry != 0) {
-        uint64_t new_value =
-            (uint64_t)securely_get_value(arg_node) * (uint64_t)small + carry;
+        uint64_t new_value = (uint64_t)securely_get_value(arg_node) * (uint64_t)small + carry;
         // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> kNumOfBitsInUInt;
+        arg_node = arg_node->prev_node;
+    }
+    copy_large_int(&buffer, result);
+    release_large_int(&buffer);
+}
+
+// LargeIntの末尾に0のノードをnum_of_zero_nodesだけつける．
+// uint32_t一つ分左シフトしたことになる
+static void push_back_zero_nodes(LargeInt* large_int, int num_of_zero_nodes) {
+    for(int i = 0; i < num_of_zero_nodes; i++) {
+        push_back(&large_int->unsigned_value, 0);
     }
 }
 
