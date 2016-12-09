@@ -1,5 +1,6 @@
 #pragma once
 
+// HACK: struct nodeなしにしたい
 typedef struct node Node;
 typedef struct node {
     unsigned int key;
