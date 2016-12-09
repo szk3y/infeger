@@ -89,6 +89,26 @@ void push_front(List* list, unsigned int key) {
     }
 }
 
+void pop_front(List* list) {
+    if(is_empty(list))
+        return;
+    // 消すノードのポインタを保存してリストの先頭ノードを更新する
+    Node* target = list->head;
+    list->head = list->head->next_node;
+
+    // 消す要素と新しい先頭ノードを切り離す
+    list->head->prev_node = NULL;
+
+    free(target);
+}
+
+Node* securely_get_next_node(Node* current_node) {
+    if(current_node == NULL)
+        return NULL;
+    else
+        return current_node->next_node;
+}
+
 Node* securely_get_prev_node(Node* current_node) {
     if(current_node == NULL)
         return NULL;

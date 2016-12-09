@@ -20,6 +20,8 @@ int is_empty(List*);
 int get_length(List*); // ノードの数を返す
 void push_back(List*, unsigned int); // Listの後ろに新しいノードをつける
 void push_front(List*, unsigned int); // Listの前に新しいノードをつける
+void pop_front(List*); // Listの先頭要素を破棄する
+Node* securely_get_next_node(Node*); // NULLを渡されると停止せずNULLを返す
 Node* securely_get_prev_node(Node*); // NULLを渡されると停止せずNULLを返す
 unsigned int securely_get_value(Node*); // NULLを渡されると停止せず0を返す
 void release_list(List*); // Listは最後に必ずこの関数を使ってメモリを開放する

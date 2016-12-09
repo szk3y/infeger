@@ -129,6 +129,10 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     large_plus(former, latter, result);
 }
 
+void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    
+}
+
 // result = former + latter
 // 符号は気にせず加算を行う
 static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
