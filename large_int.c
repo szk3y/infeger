@@ -3,7 +3,13 @@
 #include <string.h>
 #include "large_int.h"
 
-#define DEBUG
+static unsigned int word_to_uint(char*, int, int);
+static unsigned int hex_char_to_uint(char);
+static void large_add(LargeInt*, LargeInt*, LargeInt*);
+static void large_sub(LargeInt*, LargeInt*, LargeInt*);
+static int is_less_than(LargeInt*, LargeInt*);
+static void swap(char*, char*);
+static void reverse_string(char*);
 
 // unsigned intの16進数での桁数
 static const int kHexDigitsInUInt = sizeof(unsigned int) * 2;
@@ -17,14 +23,21 @@ void init_large_int(LargeInt* large_int) {
     large_int->hex_string     = NULL;
 }
 
+void copy_large_int(LargeInt* origin, LargeInt* clone) {
+    release_large_int(clone);
+    copy_list(&origin->unsigned_value, &clone->unsigned_value);
+}
+
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
+    release_large_int(large_int);
     large_int->is_negative = (hex_string[0] == '-');
 
     int length = kHexDigitsInUInt;
     // 文字列が負のとき，iは1から始まる．
-    for(int i = large_int->is_negative; i < strlen(hex_string); i = i + length) {
-        if(i == large_int->is_negative && strlen(hex_string) % kHexDigitsInUInt != 0) {
-            length = strlen(hex_string) % kHexDigitsInUInt;
+    for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
+        // 最初の処理は残りの桁数がunsigned intで割り切れるように調節する
+        if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
+            length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
         } else {
             length = kHexDigitsInUInt;
         }
@@ -89,22 +102,100 @@ static unsigned int hex_char_to_uint(char hex_char) {
     }
 }
 
-// result = operand1 + operand2
-void large_add(LargeInt* operand1, LargeInt* operand2, LargeInt* result) {
-    release_large_int(result);
-    unsigned long carry = 0;
-    Node* iter1 = operand1->unsigned_value.last;
-    Node* iter2 = operand2->unsigned_value.last;
-    while(iter1 != NULL || iter2 != NULL || carry != 0) {
-        long new_value = (long)securely_get_value(iter1) + securely_get_value(iter2) + carry;
-#ifdef DEBUG
-        printf("%016lx\n", new_value);
-#endif
-        push_front(&result->unsigned_value, (unsigned int)new_value);
-        carry = new_value >> (sizeof(unsigned int) * 8);
-        iter1 = securely_get_prev_node(iter1);
-        iter2 = securely_get_prev_node(iter2);
+// former + latter
+// 符号に応じて加算か減算を行う
+void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    // 同符号の場合
+    if(former->is_negative == latter->is_negative) {
+        large_add(former, latter, result);
+        result->is_negative = former->is_negative;
+    // 異符号の場合
+    } else {
+        // |former| < |latter|のときはlarge_sub(latter, former, result)する
+        if(is_less_than(former, latter)) {
+            large_sub(latter, former, result);
+            result->is_negative = latter->is_negative;
+        } else {
+            large_sub(former, latter, result);
+            result->is_negative = former->is_negative;
+        }
     }
+}
+
+// former - latter
+// latterの符号を変えてlarge_plusを行う
+void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    latter->is_negative = !latter->is_negative;
+    large_plus(former, latter, result);
+}
+
+// result = former + latter
+// 符号は気にせず加算を行う
+static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    // large_add(a, b, a)などにも対応するためresultは最後に触る
+    LargeInt buffer;
+    init_large_int(&buffer);
+    unsigned long carry = 0;
+    Node* former_node = former->unsigned_value.last;
+    Node* latter_node = latter->unsigned_value.last;
+    while(former_node != NULL || latter_node != NULL || carry != 0) {
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        unsigned long new_value =
+            (unsigned long)securely_get_value(former_node) +
+            (unsigned long)securely_get_value(latter_node) + carry;
+        // new_valueの下半分を取り出して代入
+        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        // new_valueの上半分を桁上げとして保存
+        carry = new_value >> (sizeof(unsigned int) * 8);
+        // 片方が短くてもぬるぽしないようにsecurely~を使う
+        former_node = securely_get_prev_node(former_node);
+        latter_node = securely_get_prev_node(latter_node);
+    }
+    copy_large_int(&buffer, result);
+    release_large_int(&buffer);
+}
+
+// former - latterを行う
+// 符号は全く気にしない
+static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    // large_sub(a, b, a)などにも対応するためresultは最後に触る
+    LargeInt buffer;
+    init_large_int(&buffer);
+    Node* former_node = former->unsigned_value.last;
+    Node* latter_node = latter->unsigned_value.last;
+    unsigned long carry = 0;
+    // carry が残ることはない
+    while(former_node != NULL || latter_node != NULL) {
+        // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
+        // 繰り下がりのぶんを予め足しておく
+        unsigned long new_value =
+            ((unsigned long)1 << (kHexDigitsInUInt * 4)) +
+            (unsigned long)securely_get_value(former_node) -
+            (unsigned long)securely_get_value(latter_node) - carry;
+        // new_valueの下半分を取り出して代入
+        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        // new_valueの上半分をみて繰り下がり判定
+        carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
+        // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
+        former_node = securely_get_prev_node(former_node);
+        latter_node = securely_get_prev_node(latter_node);
+    }
+    copy_large_int(&buffer, result);
+    release_large_int(&buffer);
+}
+
+// |former| < |latter|を返す
+static int is_less_than(LargeInt* former, LargeInt* latter) {
+    if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
+        return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
+    Node* former_node = former->unsigned_value.head;
+    Node* latter_node = latter->unsigned_value.head;
+    // 値が等しいときは次のノードにいく
+    while(former_node != NULL && former_node->key == latter_node->key) {
+        former_node = former_node->next_node;
+        latter_node = latter_node->next_node;
+    }
+    return securely_get_value(former_node) < securely_get_value(latter_node);
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
@@ -193,12 +284,18 @@ static void reverse_string(char* string) {
 void release_large_int(LargeInt* large_int) {
     release_list(&large_int->unsigned_value);
 
-    if(large_int->decimal_string != NULL)
+    if(large_int->decimal_string != NULL) {
         free(large_int->decimal_string);
-    if(large_int->binary_string != NULL)
+        large_int->decimal_string = NULL;
+    }
+    if(large_int->binary_string != NULL) {
         free(large_int->binary_string);
-    if(large_int->hex_string != NULL)
+        large_int->binary_string = NULL;
+    }
+    if(large_int->hex_string != NULL) {
         free(large_int->hex_string);
+        large_int->hex_string = NULL;
+    }
 }
 
 void print_hex(LargeInt* large_int) {
@@ -208,49 +305,3 @@ void print_hex(LargeInt* large_int) {
 void print_binary(LargeInt* large_int) {
     puts(large_int->binary_string);
 }
-
-#ifdef DEBUG
-int main() {
-    char buffer[256];
-    LargeInt large_int;
-    init_large_int(&large_int);
-    scanf("%s", buffer);
-    printf("length: %lu\n", strlen(buffer));
-    printf("zero:   %lu\n", (8 - strlen(buffer) % 8) % 8);
-    hex_string_to_large_int(buffer, &large_int);
-    printf("0x");
-    for(Node* iter = large_int.unsigned_value.head; iter != NULL; iter = iter->next_node) {
-        printf("%08x", iter->key);
-    }
-    puts("");
-
-    LargeInt addition;
-    init_large_int(&addition);
-    scanf("%s", buffer);
-    hex_string_to_large_int(buffer, &addition);
-
-    LargeInt result;
-    init_large_int(&result);
-    puts("Computing large addition...");
-    large_add(&large_int, &addition, &result);
-    puts("Done!");
-    printf("0x");
-    printf("%x\n", result.unsigned_value.head->key);
-    printf("0x");
-    for(Node* iter = result.unsigned_value.head; iter != NULL; iter = iter->next_node) {
-        printf("%x", iter->key);
-    }
-    puts("");
-    update_hex_string(&result);
-    print_hex(&result);
-    puts("Computing binary string...");
-    update_binary_string(&result);
-    puts("Done!");
-    print_binary(&result);
-
-    release_large_int(&large_int);
-    release_large_int(&addition);
-    release_large_int(&result);
-    return 0;
-}
-#endif // DEBUG

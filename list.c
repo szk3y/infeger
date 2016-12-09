@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "list.h"
 
-// #define DEBUG
-
 
 void init_node(Node* node) {
     node->key = 0;
@@ -14,6 +12,13 @@ void init_node(Node* node) {
 void init_list(List* list) {
     list->head = NULL;
     list->last = NULL;
+}
+
+void copy_list(List* origin, List* clone) {
+    release_list(clone);
+    for(Node* node = origin->head; node != NULL; node = node->next_node) {
+        push_back(clone, node->key);
+    }
 }
 
 int is_empty(List* list) {
@@ -37,9 +42,6 @@ void push_back(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
@@ -50,9 +52,6 @@ void push_back(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->last->next_node);
         // 新しいノードをリストの最後のノードとつなぐ
         list->last->next_node->prev_node = list->last;
@@ -70,9 +69,6 @@ void push_front(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
@@ -83,9 +79,6 @@ void push_front(List* list, unsigned int key) {
             puts("Failed to allocate memory");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head->prev_node);
         // 新しいノードをリストの先頭のノードとつなぐ
         list->head->prev_node->next_node = list->head;
@@ -113,41 +106,11 @@ unsigned int securely_get_value(Node* current_node) {
 void release_list(List* list) {
     if(is_empty(list))
         return;
-    // リストの要素が一つしかないとき
-    if(list->head == list->last) {
-        free(list->head);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
-        return;
-    }
     // 先頭以外のすべてのノードを開放する
     for(Node* iter = list->last->prev_node; iter != NULL; iter = iter->prev_node) {
         free(iter->next_node);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
     }
     free(list->head);
-#ifdef DEBUG
-    puts("free");
-#endif // DEBUG
+    list->head = NULL;
+    list->last = NULL;
 }
-
-
-#ifdef DEBUG
-int main() {
-    List list;
-    init_list(&list);
-    printf("is_empty: %d\n", is_empty(&list));
-    push_back(&list, 100);
-    push_back(&list, 101);
-    push_front(&list, 102);
-    for(Node* iter = list.head; iter != NULL; iter = iter->next_node) {
-        printf("%u\n", iter->key);
-    }
-    printf("prev_node->key: %u\n", list.last->prev_node->key);
-    release_list(&list);
-    return 0;
-}
-#endif // DEBUG
