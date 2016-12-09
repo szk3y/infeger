@@ -62,6 +62,7 @@ static uint32_t word_to_uint(char* hex_string, int beginning_index, int length) 
     for(int i = 0; i < length; i++) {
         if(hex_string[beginning_index + i] == '\0')
             break;
+        // 1文字ずつ数値に変えて足していく
         result += hex_char_to_uint(hex_string[beginning_index + i]) << (4 * (length - i - 1));
     }
     return result;
@@ -299,6 +300,7 @@ void update_hex_string(LargeInt* large_int) {
 void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
+    // 文字列の長さはノードの数とuint32のビット数
     int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
     if(string_length == 0) {
@@ -311,11 +313,16 @@ void update_binary_string(LargeInt* large_int) {
         large_int->binary_string[1] = '\0';
     }
 
+    // null文字が入るので1足す
     large_int->binary_string = (char*)malloc(sizeof(char) * (string_length + 1));
     if(large_int->binary_string == NULL) {
         fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
+
+    // HACK: iとcurrent_node
+    // 数値は右から1ビットずつ0か1かを判定するほうが簡単だが，文字列は左側から作るほうが簡単(あまり変わらない気もするが)
+    // 文字列を一旦左側から作って最後に反転させる
     Node* current_node = large_int->unsigned_value.last;
     for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
         uint32_t current_value = current_node->key;
@@ -345,6 +352,7 @@ static void swap(char* a, char* b) {
 static void reverse_string(char* string) {
     int length = strlen(string);
     for(int i = 0; i < length / 2; i++) {
+        // -1はnull文字を避けるため
         swap(&string[i], &string[length - i - 1]);
     }
 }
