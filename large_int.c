@@ -131,9 +131,26 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     large_plus(former, latter, result);
 }
 
-// void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
-//
-// }
+void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    LargeInt buffer;
+    init_large_int(&buffer);
+    unsigned long carry = 0;
+}
+
+void multiply_large_and_small(LargeInt* large, unsigned int small, LargeInt* result) {
+    LargeInt buffer;
+    init_large_int(&buffer);
+    unsigned long carry = 0;
+    Node* arg_node = large->unsigned_value.last;
+    while(arg_node != NULL || carry != 0) {
+        unsigned long new_value =
+            (unsigned long)securely_get_value(arg_node) * (unsigned long)small + carry;
+        // new_valueの下半分を取り出して代入
+        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        // new_valueの上半分を桁上げとして保存
+        carry = new_value >> (kHexDigitsInUInt * 4);
+    }
+}
 
 // 先頭から0でないノードが出るまでノードを取り除く
 static void remove_zero_nodes(LargeInt* large_int) {

@@ -18,6 +18,7 @@ void hex_string_to_large_int(char*, LargeInt*);
 void large_plus(LargeInt*, LargeInt*, LargeInt*);
 void large_minus(LargeInt*, LargeInt*, LargeInt*);
 void large_multiply(LargeInt*, LargeInt*, LargeInt*);
+void multiply_large_and_small(LargeInt*, unsigned int, LargeInt*);
 void update_hex_string(LargeInt*);
 void update_binary_string(LargeInt*);
 void release_large_int(LargeInt*); // LargeIntは最後に必ずこの関数でメモリを開放する
