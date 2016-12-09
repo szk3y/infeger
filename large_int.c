@@ -13,8 +13,10 @@ static void swap(char*, char*);
 static void reverse_string(char*);
 static void remove_zero_nodes(LargeInt*);
 
-// uint32_tの16進数での桁数
+// uint32_tの16進数での桁数(8)
 static const int kHexDigitsInUInt = sizeof(uint32_t) * 2;
+// uint32_tのビット数(32)
+static const int kNumOfBitsInUInt = sizeof(uint32_t) * 8;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -149,7 +151,7 @@ void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result)
         // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
-        carry = new_value >> (kHexDigitsInUInt * 4);
+        carry = new_value >> kNumOfBitsInUInt;
     }
 }
 
@@ -178,7 +180,7 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
         // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
-        carry = new_value >> (sizeof(uint32_t) * 8);
+        carry = new_value >> kNumOfBitsInUInt;
         // 片方が短くてもぬるぽしないようにsecurely~を使う
         former_node = securely_get_prev_node(former_node);
         latter_node = securely_get_prev_node(latter_node);
@@ -201,13 +203,13 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
         // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         // 繰り下がりのぶんを予め足しておく
         uint64_t new_value =
-            ((uint64_t)1 << (kHexDigitsInUInt * 4)) +
+            ((uint64_t)1 << kNumOfBitsInUInt) +
             (uint64_t)securely_get_value(former_node) -
             (uint64_t)securely_get_value(latter_node) - carry;
         // new_valueの下半分を取り出して代入
         push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分をみて繰り下がり判定
-        carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
+        carry = (new_value >> kNumOfBitsInUInt) == 0;
         // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         former_node = securely_get_prev_node(former_node);
         latter_node = securely_get_prev_node(latter_node);
@@ -263,7 +265,7 @@ void update_hex_string(LargeInt* large_int) {
 void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
-    int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt * 4;
+    int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
     if(string_length == 0) {
         large_int->binary_string = (char*)malloc(sizeof(char) * 2);
@@ -283,7 +285,7 @@ void update_binary_string(LargeInt* large_int) {
     Node* current_node = large_int->unsigned_value.last;
     for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
         uint32_t current_value = current_node->key;
-        for(int j = 0; j < kHexDigitsInUInt * 4; j++) {
+        for(int j = 0; j < kNumOfBitsInUInt; j++) {
             if(current_value % 2 == 0) {
                 large_int->binary_string[i] = '0';
             } else {
