@@ -131,9 +131,9 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     large_plus(former, latter, result);
 }
 
-void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
-
-}
+// void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
+//
+// }
 
 // 先頭から0でないノードが出るまでノードを取り除く
 static void remove_zero_nodes(LargeInt* large_int) {
@@ -194,6 +194,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
         former_node = securely_get_prev_node(former_node);
         latter_node = securely_get_prev_node(latter_node);
     }
+    remove_zero_nodes(&buffer);
     copy_large_int(&buffer, result);
     release_large_int(&buffer);
 }
