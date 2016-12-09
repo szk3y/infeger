@@ -1,9 +1,11 @@
 #pragma once
 
+#include <stdint.h>
+
 // HACK: struct nodeなしにしたい
 typedef struct node Node;
 typedef struct node {
-    unsigned int key;
+    uint32_t key;
     Node* next_node;
     Node* prev_node;
 } Node;
@@ -18,9 +20,9 @@ void init_list(List*); // Listは最初に必ずこの関数を使って初期�
 void copy_list(List*, List*); // copy_list(a,b) => b = a
 int is_empty(List*);
 int get_length(List*); // ノードの数を返す
-void push_back(List*, unsigned int); // Listの後ろに新しいノードをつける
-void push_front(List*, unsigned int); // Listの前に新しいノードをつける
+void push_back(List*, uint32_t); // Listの後ろに新しいノードをつける
+void push_front(List*, uint32_t); // Listの前に新しいノードをつける
 void pop_front(List*); // Listの先頭要素を破棄する
 Node* securely_get_prev_node(Node*); // NULLを渡されると停止せずNULLを返す
-unsigned int securely_get_value(Node*); // NULLを渡されると停止せず0を返す
+uint32_t securely_get_value(Node*); // NULLを渡されると停止せず0を返す
 void release_list(List*); // Listは最後に必ずこの関数を使ってメモリを開放する

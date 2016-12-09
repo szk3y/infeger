@@ -1,10 +1,11 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "large_int.h"
 
-static unsigned int word_to_uint(char*, int, int);
-static unsigned int hex_char_to_uint(char);
+static uint32_t word_to_uint(char*, int, int);
+static uint32_t hex_char_to_uint(char);
 static void large_add(LargeInt*, LargeInt*, LargeInt*);
 static void large_sub(LargeInt*, LargeInt*, LargeInt*);
 static int is_less_than(LargeInt*, LargeInt*);
@@ -12,8 +13,8 @@ static void swap(char*, char*);
 static void reverse_string(char*);
 static void remove_zero_nodes(LargeInt*);
 
-// unsigned intの16進数での桁数
-static const int kHexDigitsInUInt = sizeof(unsigned int) * 2;
+// uint32_tの16進数での桁数
+static const int kHexDigitsInUInt = sizeof(uint32_t) * 2;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -36,7 +37,7 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     int length = kHexDigitsInUInt;
     // 文字列が負のとき，iは1から始まる．
     for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
-        // 最初の処理は残りの桁数がunsigned intで割り切れるように調節する
+        // 最初の処理は残りの桁数がuint32_tで割り切れるように調節する
         if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
             length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
         } else {
@@ -47,9 +48,9 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
 }
 
 // beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
-// unsigned intと同じ大きさの文字列で表された数字をunsigned intにして返す
-static unsigned int word_to_uint(char* hex_string, int beginning_index, int length) {
-    unsigned int result = 0;
+// uint32_tと同じ大きさの文字列で表された数字をuint32_tにして返す
+static uint32_t word_to_uint(char* hex_string, int beginning_index, int length) {
+    uint32_t result = 0;
     for(int i = 0; i < length; i++) {
         if(hex_string[beginning_index + i] == '\0')
             break;
@@ -58,7 +59,7 @@ static unsigned int word_to_uint(char* hex_string, int beginning_index, int leng
     return result;
 }
 
-static unsigned int hex_char_to_uint(char hex_char) {
+static uint32_t hex_char_to_uint(char hex_char) {
     switch(hex_char) {
         case '0':
             return 0;
@@ -134,19 +135,19 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
-    unsigned long carry = 0;
+    uint64_t carry = 0;
 }
 
-void multiply_large_and_small(LargeInt* large, unsigned int small, LargeInt* result) {
+void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
     LargeInt buffer;
     init_large_int(&buffer);
-    unsigned long carry = 0;
+    uint64_t carry = 0;
     Node* arg_node = large->unsigned_value.last;
     while(arg_node != NULL || carry != 0) {
-        unsigned long new_value =
-            (unsigned long)securely_get_value(arg_node) * (unsigned long)small + carry;
+        uint64_t new_value =
+            (uint64_t)securely_get_value(arg_node) * (uint64_t)small + carry;
         // new_valueの下半分を取り出して代入
-        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> (kHexDigitsInUInt * 4);
     }
@@ -166,18 +167,18 @@ static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
     // large_add(a, b, a)などにも対応するためresultは最後に触る
     LargeInt buffer;
     init_large_int(&buffer);
-    unsigned long carry = 0;
+    uint64_t carry = 0;
     Node* former_node = former->unsigned_value.last;
     Node* latter_node = latter->unsigned_value.last;
     while(former_node != NULL || latter_node != NULL || carry != 0) {
         // 片方が短くてもぬるぽしないようにsecurely~を使う
-        unsigned long new_value =
-            (unsigned long)securely_get_value(former_node) +
-            (unsigned long)securely_get_value(latter_node) + carry;
+        uint64_t new_value =
+            (uint64_t)securely_get_value(former_node) +
+            (uint64_t)securely_get_value(latter_node) + carry;
         // new_valueの下半分を取り出して代入
-        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
-        carry = new_value >> (sizeof(unsigned int) * 8);
+        carry = new_value >> (sizeof(uint32_t) * 8);
         // 片方が短くてもぬるぽしないようにsecurely~を使う
         former_node = securely_get_prev_node(former_node);
         latter_node = securely_get_prev_node(latter_node);
@@ -194,17 +195,17 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     init_large_int(&buffer);
     Node* former_node = former->unsigned_value.last;
     Node* latter_node = latter->unsigned_value.last;
-    unsigned long carry = 0;
+    uint64_t carry = 0;
     // carry が残ることはない
     while(former_node != NULL || latter_node != NULL) {
         // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         // 繰り下がりのぶんを予め足しておく
-        unsigned long new_value =
-            ((unsigned long)1 << (kHexDigitsInUInt * 4)) +
-            (unsigned long)securely_get_value(former_node) -
-            (unsigned long)securely_get_value(latter_node) - carry;
+        uint64_t new_value =
+            ((uint64_t)1 << (kHexDigitsInUInt * 4)) +
+            (uint64_t)securely_get_value(former_node) -
+            (uint64_t)securely_get_value(latter_node) - carry;
         // new_valueの下半分を取り出して代入
-        push_front(&buffer.unsigned_value, (unsigned int)new_value);
+        push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分をみて繰り下がり判定
         carry = (new_value >> (kHexDigitsInUInt * 4)) == 0;
         // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
@@ -281,7 +282,7 @@ void update_binary_string(LargeInt* large_int) {
     }
     Node* current_node = large_int->unsigned_value.last;
     for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
-        unsigned int current_value = current_node->key;
+        uint32_t current_value = current_node->key;
         for(int j = 0; j < kHexDigitsInUInt * 4; j++) {
             if(current_value % 2 == 0) {
                 large_int->binary_string[i] = '0';
