@@ -4,16 +4,16 @@
 #include <string.h>
 #include "large_int.h"
 
-static uint32_t word_to_uint(char*, int, int);
-static uint32_t hex_char_to_uint(char);
-static void large_add(LargeInt*, LargeInt*, LargeInt*);
-static void large_sub(LargeInt*, LargeInt*, LargeInt*);
-static int is_less_than(LargeInt*, LargeInt*);
-static void swap(char*, char*);
-static void reverse_string(char*);
-static void remove_zero_nodes(LargeInt*);
-static void push_back_zero_nodes(LargeInt*, int);
-static void multiply_large_and_small(LargeInt*, uint32_t, LargeInt*);
+static uint32_t word_to_uint(char*, int, int); // 16進数文字列の32bit整数を32bit整数にする
+static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
+static void large_add(LargeInt*, LargeInt*, LargeInt*); // 符号を気にせず加算
+static void large_sub(LargeInt*, LargeInt*, LargeInt*); // 符号を気にせず減算
+static int is_less_than(LargeInt*, LargeInt*); // |former| < |latter|を返す
+static void swap(char*, char*); // aとbを入れ替える
+static void reverse_string(char*); // 文字列を反転させる
+static void remove_zero_nodes(LargeInt*); // 左側の不要な値0のノードをできるだけ消す
+static void push_back_zero_nodes(LargeInt*, int); // LargeIntをuint32_t n個分左にシフトする
+static void multiply_large_and_small(LargeInt*, uint32_t, LargeInt*); // LargeIntとuint32_tの乗算
 
 
 // uint32_tの16進数での桁数(8)
