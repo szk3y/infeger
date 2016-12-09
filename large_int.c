@@ -284,6 +284,7 @@ void update_hex_string(LargeInt* large_int) {
         large_int->hex_string[1] = '\0';
     }
 
+    // null文字が入るので1足す
     large_int->hex_string = (char*)malloc(sizeof(char) * (string_length + 1));
     if(large_int->hex_string == NULL) {
         puts("Failed to allocate memory");
@@ -291,6 +292,8 @@ void update_hex_string(LargeInt* large_int) {
     }
     Node* current_node = large_int->unsigned_value.head;
     for(int i = 0; i < get_length(&large_int->unsigned_value); i++) {
+        // uint32_t一つぶんを文字列に変換する
+        // 実は毎回出るnullバイトを塗りつぶしている
         snprintf(large_int->hex_string + i * kHexDigitsInUInt, kHexDigitsInUInt + 1, "%08x", current_node->key);
         current_node = current_node->next_node;
     }
