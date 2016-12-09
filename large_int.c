@@ -4,16 +4,18 @@
 #include <string.h>
 #include "large_int.h"
 
-static uint32_t word_to_uint(char*, int, int); // 16進数文字列の32bit整数を32bit整数にする
+static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
-static void large_add(LargeInt*, LargeInt*, LargeInt*); // 符号を気にせず加算
-static void large_sub(LargeInt*, LargeInt*, LargeInt*); // 符号を気にせず減算
-static int is_less_than(LargeInt*, LargeInt*); // |former| < |latter|を返す
+// 符号の処理はこの2つの関数の後で行わなければならない
+static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
+static void large_sub(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a - b
+
+static int is_less_than(LargeInt* former, LargeInt* latter); // |former| < |latter|を返す
 static void swap(char*, char*); // aとbを入れ替える
 static void reverse_string(char*); // 文字列を反転させる
 static void remove_zero_nodes(LargeInt*); // 左側の不要な値0のノードをできるだけ消す
 static void push_back_zero_nodes(LargeInt*, int); // LargeIntをuint32_t n個分左にシフトする
-static void multiply_large_and_small(LargeInt*, uint32_t, LargeInt*); // LargeIntとuint32_tの乗算
+static void multiply_large_and_small(LargeInt* a, uint32_t b, LargeInt* result); // result = a * b
 
 
 // uint32_tの16進数での桁数(8)
