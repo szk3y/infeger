@@ -46,6 +46,7 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     }
 }
 
+// beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
 // unsigned intと同じ大きさの文字列で表された数字をunsigned intにして返す
 static unsigned int word_to_uint(char* hex_string, int beginning_index, int length) {
     unsigned int result = 0;
@@ -134,8 +135,12 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
 
 }
 
+// 先頭から0でないノードが出るまでノードを取り除く
 static void remove_zero_nodes(LargeInt* large_int) {
-
+    while(large_int->unsigned_value.head != large_int->unsigned_value.last
+            && large_int->unsigned_value.head->key == 0) {
+        pop_front(&large_int->unsigned_value);
+    }
 }
 
 // result = former + latter
