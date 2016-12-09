@@ -102,6 +102,7 @@ static unsigned int hex_char_to_uint(char hex_char) {
     }
 }
 
+// former + latter
 // 符号に応じて加算か減算を行う
 void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     // 同符号の場合
@@ -121,6 +122,7 @@ void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     }
 }
 
+// former - latter
 // latterの符号を変えてlarge_plusを行う
 void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     latter->is_negative = !latter->is_negative;
