@@ -10,6 +10,7 @@ static void large_sub(LargeInt*, LargeInt*, LargeInt*);
 static int is_less_than(LargeInt*, LargeInt*);
 static void swap(char*, char*);
 static void reverse_string(char*);
+static void remove_zero_nodes(LargeInt*);
 
 // unsigned intの16進数での桁数
 static const int kHexDigitsInUInt = sizeof(unsigned int) * 2;
@@ -130,7 +131,11 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
 }
 
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    
+
+}
+
+static void remove_zero_nodes(LargeInt* large_int) {
+
 }
 
 // result = former + latter

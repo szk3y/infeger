@@ -102,13 +102,6 @@ void pop_front(List* list) {
     free(target);
 }
 
-Node* securely_get_next_node(Node* current_node) {
-    if(current_node == NULL)
-        return NULL;
-    else
-        return current_node->next_node;
-}
-
 Node* securely_get_prev_node(Node* current_node) {
     if(current_node == NULL)
         return NULL;
