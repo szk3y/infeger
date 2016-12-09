@@ -121,6 +121,12 @@ void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     }
 }
 
+// latterの符号を変えてlarge_plusを行う
+void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    latter->is_negative = !latter->is_negative;
+    large_plus(former, latter, result);
+}
+
 // result = former + latter
 // 符号は気にせず加算を行う
 static void large_add(LargeInt* former, LargeInt* latter, LargeInt* result) {
