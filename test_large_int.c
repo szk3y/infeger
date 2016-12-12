@@ -10,14 +10,14 @@ int main() {
 
     LargeInt latter;
     init_large_int(&latter);
-    hex_string_to_large_int("300000003", &latter);
+    hex_string_to_large_int("33333", &latter);
     update_hex_string(&latter);
     print_hex(&latter);
 
     LargeInt result;
     init_large_int(&result);
 
-    large_multiply(&former, &latter, &result);
+    large_divide(&former, &latter, &result);
     update_hex_string(&result);
     print_hex(&result);
 

@@ -143,7 +143,7 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
 // bufferやtmpのような名前が2つ出そうになったので変数名にorigin,cloneを使ってみた
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     // releaseのタイミングがややこしくなりそうなので符号を先に決めておく
-    int is_negative = former->is_negative == latter->is_negative;
+    int is_negative = former->is_negative != latter->is_negative;
     LargeInt origin;
     init_large_int(&origin);
     // HACK: uint何個分左シフトするかを数える．他の方法を考える
@@ -161,6 +161,33 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     copy_large_int(&origin, clone);
     release_large_int(&origin);
     clone->is_negative = is_negative;
+}
+
+// HACK: とりあえず動くだけ．とても遅い
+void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result) {
+    int is_negative = former->is_negative != latter->is_negative;
+    // ひたすらlatterをこれに足す
+    LargeInt buffer;
+    init_large_int(&buffer);
+    copy_large_int(latter, &buffer);
+    // latterを足した回数を覚える
+    LargeInt counter;
+    init_large_int(&counter);
+    // counterに1を足すための変数
+    LargeInt one;
+    init_large_int(&one);
+    hex_string_to_large_int("1", &one);
+
+    while(is_less_than(&buffer, former)) {
+        large_add(&buffer, latter, &buffer);
+        large_add(&counter, &one, &counter);
+    }
+    copy_large_int(&counter, result);
+    result->is_negative = is_negative;
+
+    release_large_int(&one);
+    release_large_int(&counter);
+    release_large_int(&buffer);
 }
 
 static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
