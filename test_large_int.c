@@ -4,12 +4,12 @@
 int main() {
     LargeInt former;
     init_large_int(&former);
-    hex_string_to_large_int("1234567890", &former);
+    hex_string_to_large_int("1", &former);
     print_hex(&former);
 
     LargeInt latter;
     init_large_int(&latter);
-    hex_string_to_large_int("deadbeaf", &latter);
+    hex_string_to_large_int("1", &latter);
     print_hex(&latter);
 
     LargeInt result;
