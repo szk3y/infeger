@@ -16,6 +16,8 @@ static void reverse_string(char*); // 文字列を反転させる
 static void remove_zero_nodes(LargeInt*); // 左側の不要な値0のノードをできるだけ消す
 static void push_back_zero_nodes(LargeInt*, int); // LargeIntをuint32_t n個分左にシフトする
 static void multiply_large_and_small(LargeInt* a, uint32_t b, LargeInt* result); // result = a * b
+static void large_shift_left(LargeInt*); // LargeIntを1つだけ左論理シフトする
+static void large_shift_right(LargeInt*); // LargeIntを1つだけ右論理シフトする
 
 
 // uint32_tの16進数での桁数(8)
@@ -163,31 +165,55 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     clone->is_negative = is_negative;
 }
 
-// HACK: とりあえず動くだけ．とても遅い
+// HACK: 筆算方式に変える
 void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result) {
     int is_negative = former->is_negative != latter->is_negative;
-    // ひたすらlatterをこれに足す
-    LargeInt buffer;
-    init_large_int(&buffer);
-    copy_large_int(latter, &buffer);
-    // latterを足した回数を覚える
-    LargeInt counter;
-    init_large_int(&counter);
-    // counterに1を足すための変数
-    LargeInt one;
-    init_large_int(&one);
-    hex_string_to_large_int("1", &one);
+    // この数字から引いていく
+    LargeInt current_divident;
+    init_large_int(&current_divident);
+    copy_large_int(former, &current_divisor)
+    // この数字を少しずつ小さくして引いていく
+    LargeInt current_divisor;
+    init_large_int(latter, &current_divisor);
+    copy_large_int(latter, &current_divisor);
+    // 結果を一時的に保持する
+    LargeInt quotient;
+    init_large_int(&quotient);
+    // 引き算できる場合どのbitをオンにするかを示す
+    LargeInt current_bit;
+    init_large_int(&current_bit);
+    hex_string_to_large_int("1", &current_bit);
 
-    while(is_less_than(&buffer, former)) {
-        large_add(&buffer, latter, &buffer);
-        large_add(&counter, &one, &counter);
+    while(is_less_than(&current_divisor, &current_divident)) {
+
     }
-    copy_large_int(&counter, result);
-    result->is_negative = is_negative;
 
-    release_large_int(&one);
-    release_large_int(&counter);
-    release_large_int(&buffer);
+    while(!is_less_than(&))
+}
+
+static void large_shift_left(LargeInt* large_int) {
+    uint64_t carry = 0;
+    // すべてのキーに対し左シフト
+    for(Node* node = large_int->unsigned_value.head; node != NULL; node = node->next_node) {
+        uint64_t new_value = ((uint64_t)node->key << 1) + carry;
+        node->key = (uint32_t)new_value;
+        // はみ出た分を桁上げとして保存
+        carry = new_value >> kNumOfBitsInUInt;
+    }
+    if(carry == 1) {
+        push_front(large_int, 1);
+    }
+}
+
+static void large_shift_right(LargeInt* large_int) {
+    uint32_t carry_flag = 0;
+    for(Node* node = large_int->unsigned_value.head; node != NULL; node = node->next_node) {
+        // 値が変わってからではわからないので最初に桁下げがないか確認する
+        uint32_t current_carry_flag = node->key & 1;
+        // キャリーフラグは一つ上位のuintから降ってくるので32bitで最上位にくる
+        node->key = (node->key >> 1) + (carry_flag << 31);
+        carry_flag = current_carry_flag;
+    }
 }
 
 static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
@@ -287,11 +313,20 @@ static int is_less_than(LargeInt* former, LargeInt* latter) {
     Node* former_node = former->unsigned_value.head;
     Node* latter_node = latter->unsigned_value.head;
     // 値が等しいときは次のノードにいく
+    // 長さが等しいのでformerがNULLならlatterもNULLである
     while(former_node != NULL && former_node->key == latter_node->key) {
         former_node = former_node->next_node;
         latter_node = latter_node->next_node;
     }
     return securely_get_value(former_node) < securely_get_value(latter_node);
+}
+
+static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
+    Node* former_node = former->unsigned_value;
+    Node* latter_node = latter->unsigned_value;
+    while(former_node != NULL && latter_node != NULL) {
+
+    }
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
