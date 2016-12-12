@@ -4,6 +4,8 @@
 #include <string.h>
 #include "large_int.h"
 
+// HACK: formerとかlatterとかをいい感じの名前に
+
 static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
 static char get_sign_char(LargeInt*);
@@ -25,11 +27,11 @@ static void multiply_large_and_small(LargeInt* a, uint32_t b, LargeInt* result);
 static void large_shift_left(LargeInt*); // LargeIntを1つだけ左論理シフトする
 static void large_shift_right(LargeInt*); // LargeIntを1つだけ右論理シフトする
 
-
-// uint32_tの16進数での桁数(8)
-static const int kHexDigitsInUInt = sizeof(uint32_t) * 2;
-// uint32_tのビット数(32)
-static const int kNumOfBitsInUInt = sizeof(uint32_t) * 8;
+// いらないかもしれない
+// uint32_tの16進数での桁数
+static const int kHexDigitsInUInt = 8;
+// uint32_tのビット数
+static const int kNumOfBitsInUInt = 32;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -52,7 +54,7 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     int length = kHexDigitsInUInt;
     // 文字列が負のとき，iは1から始まる．
     for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
-        // 最初の処理は残りの桁数がuint32_tで割り切れるように調節する
+        // 最初の処理は残りの桁数がuint32_tで割り切れるように長さを調節する
         if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
             length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
         } else {
@@ -62,6 +64,8 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     }
     remove_zero_nodes(large_int);
 }
+
+// static void hex_string_to_large_int(char* hex_string, LargeInt* large_int) 
 
 // beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
 // uint32_tと同じ大きさの文字列で表された数字をuint32_tにして返す
@@ -173,6 +177,8 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
 }
 
 // 1bitずつ筆算方式で求める
+// FIXME: dividentに-0を渡すとSegmentation fault．hex_string_to_large_int()にも原因がありそう
+// 他にも-をつけるとときどきセグフォする
 void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     if(securely_get_value(divisor->unsigned_value.head) == 0) {
         fprintf(stderr, "zero division\n");
