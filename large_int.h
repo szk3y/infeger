@@ -4,7 +4,6 @@
 #include "list.h"
 
 // char*型の要素に直接代入をしてはいけない
-// 必ずupdate関数を使うこと
 typedef struct {
     int is_negative;
     List unsigned_value;
