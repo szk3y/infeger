@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
@@ -35,7 +36,7 @@ int get_length(List* list) {
     return counter;
 }
 
-void push_back(List* list, unsigned int key) {
+void push_back(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
@@ -62,7 +63,7 @@ void push_back(List* list, unsigned int key) {
     }
 }
 
-void push_front(List* list, unsigned int key) {
+void push_front(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
@@ -89,6 +90,19 @@ void push_front(List* list, unsigned int key) {
     }
 }
 
+void pop_front(List* list) {
+    if(is_empty(list))
+        return;
+    // 消すノードのポインタを保存してリストの先頭ノードを更新する
+    Node* target = list->head;
+    list->head = list->head->next_node;
+
+    // 消す要素と新しい先頭ノードを切り離す
+    list->head->prev_node = NULL;
+
+    free(target);
+}
+
 Node* securely_get_prev_node(Node* current_node) {
     if(current_node == NULL)
         return NULL;
@@ -96,7 +110,7 @@ Node* securely_get_prev_node(Node* current_node) {
         return current_node->prev_node;
 }
 
-unsigned int securely_get_value(Node* current_node) {
+uint32_t securely_get_value(Node* current_node) {
     if(current_node == NULL)
         return 0;
     else
