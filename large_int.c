@@ -37,7 +37,6 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
     copy_list(&origin->unsigned_value, &clone->unsigned_value);
 }
 
-// FIXME: -0の処理．その他の関数においても-0を存在させないようにする
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     release_large_int(large_int);
     large_int->is_negative = (hex_string[0] == '-');
@@ -141,7 +140,6 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
     large_plus(former, latter, result);
 }
 
-// FIXME: 0の処理
 // bufferやtmpのような名前が2つ出そうになったので変数名にorigin,cloneを使ってみた
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     // releaseのタイミングがややこしくなりそうなので符号を先に決めておく
@@ -178,6 +176,7 @@ static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* 
         carry = new_value >> kNumOfBitsInUInt;
         arg_node = arg_node->prev_node;
     }
+    remove_zero_nodes(&buffer);
     copy_large_int(&buffer, result);
     release_large_int(&buffer);
 }
@@ -324,7 +323,7 @@ void update_binary_string(LargeInt* large_int) {
     }
 
     // HACK: iとcurrent_node
-    // 数値は右から1ビットずつ0か1かを判定するほうが簡単だが，文字列は左側から作るほうが簡単(あまり変わらない気もするが)
+    // 数値は右から1ビットずつ0か1かを判定するほうが簡単だが，文字列は左側から埋めていくほうが簡単(あまり変わらない気もするが)
     // 文字列を一旦左側から作って最後に反転させる
     Node* current_node = large_int->unsigned_value.last;
     for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
