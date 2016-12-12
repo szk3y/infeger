@@ -4,13 +4,13 @@
 int main() {
     LargeInt former;
     init_large_int(&former);
-    hex_string_to_large_int("1ffffffff", &former);
+    hex_string_to_large_int("1234567890", &former);
     update_hex_string(&former);
     print_hex(&former);
 
     LargeInt latter;
     init_large_int(&latter);
-    hex_string_to_large_int("33333", &latter);
+    hex_string_to_large_int("deadbeaf", &latter);
     update_hex_string(&latter);
     print_hex(&latter);
 
@@ -20,6 +20,18 @@ int main() {
     large_divide(&former, &latter, &result);
     update_hex_string(&result);
     print_hex(&result);
+
+    // large_shift_right(&former);
+    // update_hex_string(&former);
+    // print_hex(&former);
+    //
+    // large_shift_right(&former);
+    // update_hex_string(&former);
+    // print_hex(&former);
+    //
+    // large_shift_left(&former);
+    // update_hex_string(&former);
+    // print_hex(&former);
 
     release_large_int(&former);
     release_large_int(&latter);

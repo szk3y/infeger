@@ -11,6 +11,7 @@ static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を�
 static void large_sub(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a - b
 
 static int is_less_than(LargeInt* former, LargeInt* latter); // |former| < |latter|を返す
+static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter); // |former| <= |latter|を返す
 static void swap(char*, char*); // aとbを入れ替える
 static void reverse_string(char*); // 文字列を反転させる
 static void remove_zero_nodes(LargeInt*); // 左側の不要な値0のノードをできるだけ消す
@@ -165,17 +166,18 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     clone->is_negative = is_negative;
 }
 
-// HACK: 筆算方式に変える
-void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result) {
-    int is_negative = former->is_negative != latter->is_negative;
+// 1bitずつ筆算方式で求める
+void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
+    int is_negative = divident->is_negative != divisor->is_negative;
     // この数字から引いていく
     LargeInt current_divident;
     init_large_int(&current_divident);
-    copy_large_int(former, &current_divisor)
+    copy_large_int(divident, &current_divident);
     // この数字を少しずつ小さくして引いていく
+    // 1つ左シフトするとcurrent_dividentを超える値を保つ
     LargeInt current_divisor;
-    init_large_int(latter, &current_divisor);
-    copy_large_int(latter, &current_divisor);
+    init_large_int(&current_divisor);
+    copy_large_int(divisor, &current_divisor);
     // 結果を一時的に保持する
     LargeInt quotient;
     init_large_int(&quotient);
@@ -184,24 +186,41 @@ void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result) {
     init_large_int(&current_bit);
     hex_string_to_large_int("1", &current_bit);
 
-    while(is_less_than(&current_divisor, &current_divident)) {
-
+    // ぎりぎりdivident以下になるようにcurrent_divisorをシフトして大きくする
+    while(is_less_than_or_equal_to(&current_divisor, divident)) {
+        large_shift_left(&current_divisor);
+        large_shift_left(&current_bit);
     }
 
-    while(!is_less_than(&))
+    // 本来の割る数よりも
+    while(is_less_than_or_equal_to(divisor, &current_divisor)) {
+        if(is_less_than_or_equal_to(&current_divisor, &current_divident)) {
+            large_sub(&current_divident, &current_divisor, &current_divident);
+            large_add(&quotient, &current_bit, &quotient);
+        }
+        large_shift_right(&current_divisor);
+        large_shift_right(&current_bit);
+    }
+    copy_large_int(&quotient, result);
+    result->is_negative = is_negative;
+
+    release_large_int(&current_bit);
+    release_large_int(&quotient);
+    release_large_int(&current_divisor);
+    release_large_int(&current_divident);
 }
 
 static void large_shift_left(LargeInt* large_int) {
     uint64_t carry = 0;
     // すべてのキーに対し左シフト
-    for(Node* node = large_int->unsigned_value.head; node != NULL; node = node->next_node) {
+    for(Node* node = large_int->unsigned_value.last; node != NULL; node = node->prev_node) {
         uint64_t new_value = ((uint64_t)node->key << 1) + carry;
         node->key = (uint32_t)new_value;
         // はみ出た分を桁上げとして保存
         carry = new_value >> kNumOfBitsInUInt;
     }
     if(carry == 1) {
-        push_front(large_int, 1);
+        push_front(&large_int->unsigned_value, 1);
     }
 }
 
@@ -214,6 +233,7 @@ static void large_shift_right(LargeInt* large_int) {
         node->key = (node->key >> 1) + (carry_flag << 31);
         carry_flag = current_carry_flag;
     }
+    remove_zero_nodes(large_int);
 }
 
 static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* result) {
@@ -321,12 +341,20 @@ static int is_less_than(LargeInt* former, LargeInt* latter) {
     return securely_get_value(former_node) < securely_get_value(latter_node);
 }
 
+// |former| <= |latter|を返す
+// 最後以外はis_less_thanのコピー
 static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
-    Node* former_node = former->unsigned_value;
-    Node* latter_node = latter->unsigned_value;
-    while(former_node != NULL && latter_node != NULL) {
-
+    if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
+        return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
+    Node* former_node = former->unsigned_value.head;
+    Node* latter_node = latter->unsigned_value.head;
+    // 値が等しいときは次のノードにいく
+    // 長さが等しいのでformerがNULLならlatterもNULLである
+    while(former_node != NULL && former_node->key == latter_node->key) {
+        former_node = former_node->next_node;
+        latter_node = latter_node->next_node;
     }
+    return securely_get_value(former_node) <= securely_get_value(latter_node);
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
