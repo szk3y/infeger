@@ -46,7 +46,6 @@ void push_back(List* list, uint32_t key) {
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
-        return;
     } else {
         list->last->next_node = (Node*)malloc(sizeof(Node));
         if(list->last->next_node == NULL) {
@@ -73,7 +72,6 @@ void push_front(List* list, uint32_t key) {
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
-        return;
     } else {
         list->head->prev_node = (Node*)malloc(sizeof(Node));
         if(list->head->prev_node == NULL) {

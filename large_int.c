@@ -10,6 +10,7 @@ static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
 static char get_sign_char(LargeInt*);
 
+static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int);
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
 
@@ -49,14 +50,17 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
 
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     release_large_int(large_int);
-    large_int->is_negative = (hex_string[0] == '-');
-
-    int length = kHexDigitsInUInt;
+    large_int->is_negative = hex_string[0] == '-';
     // 文字列が負のとき，iは1から始まる．
-    for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
+    unsigned_hex_string_to_large_int(hex_string + large_int->is_negative, large_int);
+}
+
+static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
+    int length = kHexDigitsInUInt;
+    for(int i = 0; i < (int)strlen(hex_string); i = i + length) {
         // 最初の処理は残りの桁数がuint32_tで割り切れるように長さを調節する
-        if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
-            length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
+        if(i == 0 && strlen(hex_string) % kHexDigitsInUInt != 0) {
+            length = strlen(hex_string) % kHexDigitsInUInt;
         } else {
             length = kHexDigitsInUInt;
         }
@@ -64,8 +68,6 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     }
     remove_zero_nodes(large_int);
 }
-
-// static void hex_string_to_large_int(char* hex_string, LargeInt* large_int) 
 
 // beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
 // uint32_tと同じ大きさの文字列で表された数字をuint32_tにして返す
@@ -177,8 +179,6 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
 }
 
 // 1bitずつ筆算方式で求める
-// FIXME: dividentに-0を渡すとSegmentation fault．hex_string_to_large_int()にも原因がありそう
-// 他にも-をつけるとときどきセグフォする
 void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     if(securely_get_value(divisor->unsigned_value.head) == 0) {
         fprintf(stderr, "zero division\n");
@@ -197,6 +197,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     // 結果を一時的に保持する
     LargeInt quotient;
     init_large_int(&quotient);
+    hex_string_to_large_int("0", &quotient);
     // 引き算できる場合どのbitをオンにするかを示す
     LargeInt current_bit;
     init_large_int(&current_bit);
@@ -485,18 +486,18 @@ void release_large_int(LargeInt* large_int) {
 
 void print_hex(LargeInt* large_int) {
     update_hex_string(large_int);
-    printf("%c", get_sign_char(large_int));
+    printf("%c0x", get_sign_char(large_int));
     puts(large_int->hex_string);
 }
 
 void print_binary(LargeInt* large_int) {
     update_binary_string(large_int);
-    printf("%c", get_sign_char(large_int));
+    printf("%c0b", get_sign_char(large_int));
     puts(large_int->binary_string);
 }
 
 static char get_sign_char(LargeInt* large_int) {
-    if(large_int->is_negative && large_int->unsigned_value.head->key != 0)
+    if(large_int->is_negative && securely_get_value(large_int->unsigned_value.head) != 0)
         return '-';
     else
         return '+';
