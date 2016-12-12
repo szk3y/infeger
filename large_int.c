@@ -4,8 +4,12 @@
 #include <string.h>
 #include "large_int.h"
 
+static void update_hex_string(LargeInt*);
+static void update_binary_string(LargeInt*);
+
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
+
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
 static void large_sub(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a - b
@@ -358,7 +362,7 @@ static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
-void update_hex_string(LargeInt* large_int) {
+static void update_hex_string(LargeInt* large_int) {
     if(large_int->hex_string != NULL)
         free(large_int->hex_string);
     int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt;
@@ -389,7 +393,7 @@ void update_hex_string(LargeInt* large_int) {
 }
 
 // LargeIntのunsigned_valueからbinary_stringを更新する
-void update_binary_string(LargeInt* large_int) {
+static void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
     // 文字列の長さはノードの数とuint32のビット数
@@ -468,9 +472,11 @@ void release_large_int(LargeInt* large_int) {
 }
 
 void print_hex(LargeInt* large_int) {
+    update_hex_string(large_int);
     puts(large_int->hex_string);
 }
 
 void print_binary(LargeInt* large_int) {
+    update_binary_string(large_int);
     puts(large_int->binary_string);
 }
