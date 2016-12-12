@@ -6,6 +6,7 @@
 
 static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
+static char get_sign_char(LargeInt*);
 
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
@@ -59,6 +60,7 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
         }
         push_back(&large_int->unsigned_value, word_to_uint(hex_string, i, length));
     }
+    remove_zero_nodes(large_int);
 }
 
 // beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
@@ -172,6 +174,10 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
 
 // 1bitずつ筆算方式で求める
 void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
+    if(securely_get_value(divisor->unsigned_value.head) == 0) {
+        fprintf(stderr, "zero division\n");
+        exit(1);
+    }
     int is_negative = divident->is_negative != divisor->is_negative;
     // この数字から引いていく
     LargeInt current_divident;
@@ -375,6 +381,7 @@ static void update_hex_string(LargeInt* large_int) {
         }
         large_int->hex_string[0] = '0';
         large_int->hex_string[1] = '\0';
+        return;
     }
 
     // null文字が入るので1足す
@@ -407,6 +414,7 @@ static void update_binary_string(LargeInt* large_int) {
         }
         large_int->binary_string[0] = '0';
         large_int->binary_string[1] = '\0';
+        return;
     }
 
     // null文字が入るので1足す
@@ -415,12 +423,14 @@ static void update_binary_string(LargeInt* large_int) {
         fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
+    large_int->binary_string[string_length] = '\0';
 
     // HACK: iとcurrent_node
     // 数値は右から1ビットずつ0か1かを判定するほうが簡単だが，文字列は左側から埋めていくほうが簡単(あまり変わらない気もするが)
     // 文字列を一旦左側から作って最後に反転させる
     Node* current_node = large_int->unsigned_value.last;
-    for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
+    int i;
+    for(i = 0; current_node != NULL; current_node = current_node->prev_node) {
         uint32_t current_value = current_node->key;
         for(int j = 0; j < kNumOfBitsInUInt; j++) {
             if(current_value % 2 == 0) {
@@ -430,10 +440,6 @@ static void update_binary_string(LargeInt* large_int) {
             }
             current_value = current_value >> 1;
             i++;
-
-            // 大量の0が頭につくのを防ぐ
-            if(current_value == 0 && current_node == large_int->unsigned_value.head)
-                break;
         }
     }
     reverse_string(large_int->binary_string);
@@ -473,10 +479,19 @@ void release_large_int(LargeInt* large_int) {
 
 void print_hex(LargeInt* large_int) {
     update_hex_string(large_int);
+    printf("%c", get_sign_char(large_int));
     puts(large_int->hex_string);
 }
 
 void print_binary(LargeInt* large_int) {
     update_binary_string(large_int);
+    printf("%c", get_sign_char(large_int));
     puts(large_int->binary_string);
+}
+
+static char get_sign_char(LargeInt* large_int) {
+    if(large_int->is_negative && large_int->unsigned_value.head->key != 0)
+        return '-';
+    else
+        return '+';
 }
