@@ -192,7 +192,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
         large_shift_left(&current_bit);
     }
 
-    // 本来の割る数よりも
+    // 本来の割る数よりも小さくなったら終了
     while(is_less_than_or_equal_to(divisor, &current_divisor)) {
         if(is_less_than_or_equal_to(&current_divisor, &current_divident)) {
             large_sub(&current_divident, &current_divisor, &current_divident);
