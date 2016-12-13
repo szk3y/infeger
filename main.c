@@ -7,6 +7,7 @@ void do_operation(LargeInt*, char, LargeInt*, LargeInt*);
 int main(int argc, char** argv) {
     if(argc != 4) {
         fprintf(stderr, "Usage: %s <operand> <operator> <operand>\n", argv[0]);
+        fprintf(stderr, "Available operators: +, -, x, /\n");
         exit(1);
     }
 
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
     do_operation(&operand1, argv[2][0], &operand2, &result);
     print_hex_string(&result);
     print_binary_string(&result);
+    print_decimal_string(&result);
     printf("Digit: %d\n", get_digit(&result));
 
     release_large_int(&result);
@@ -39,7 +41,7 @@ void do_operation(LargeInt* operand1, char operator, LargeInt* operand2, LargeIn
         case '-':
             large_minus(operand1, operand2, result);
             break;
-        case '*':
+        case 'x':
             large_multiply(operand1, operand2, result);
             break;
         case '/':

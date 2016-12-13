@@ -16,6 +16,7 @@ static char get_sign_char(LargeInt*);
 static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int);
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
+static char decimal_digit_to_char(uint32_t); // 0~9の数字を文字に変換する
 
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
@@ -382,9 +383,8 @@ static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
 static void update_hex_string(LargeInt* large_int) {
     if(large_int->hex_string != NULL)
         free(large_int->hex_string);
-    int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt;
 
-    if(string_length == 0) {
+    if(is_empty(&large_int->unsigned_value)) {
         large_int->hex_string = (char*)malloc(sizeof(char) * 2);
         if(large_int->hex_string == NULL) {
             puts("Failed to allocate memory");
@@ -394,6 +394,8 @@ static void update_hex_string(LargeInt* large_int) {
         large_int->hex_string[1] = '\0';
         return;
     }
+
+    int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt;
 
     // null文字が入るので1足す
     large_int->hex_string = (char*)malloc(sizeof(char) * (string_length + 1));
@@ -415,9 +417,8 @@ static void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
     // 文字列の長さはノードの数とuint32のビット数
-    int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
-    if(string_length == 0) {
+    if(is_empty(&large_int->unsigned_value)) {
         large_int->binary_string = (char*)malloc(sizeof(char) * 2);
         if(large_int->binary_string == NULL) {
             puts("Failed to allocate memory");
@@ -427,6 +428,8 @@ static void update_binary_string(LargeInt* large_int) {
         large_int->binary_string[1] = '\0';
         return;
     }
+
+    int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
     // null文字が入るので1足す
     large_int->binary_string = (char*)malloc(sizeof(char) * (string_length + 1));
@@ -471,6 +474,9 @@ static void reverse_string(char* string) {
 }
 
 int get_digit(LargeInt* large_int) {
+    if(is_empty(&large_int->unsigned_value)) {
+        return 1;
+    }
     // 10，100などの値を保持する
     LargeInt scale;
     init_large_int(&scale);
@@ -491,10 +497,84 @@ int get_digit(LargeInt* large_int) {
     return counter;
 }
 
+static char decimal_digit_to_char(uint32_t num) {
+    switch(num) {
+        case 0:
+            return '0';
+        case 1:
+            return '1';
+        case 2:
+            return '2';
+        case 3:
+            return '3';
+        case 4:
+            return '4';
+        case 5:
+            return '5';
+        case 6:
+            return '6';
+        case 7:
+            return '7';
+        case 8:
+            return '8';
+        case 9:
+            return '9';
+        default:
+            fprintf(stderr, "decimal_digit_to_char: Invalid argument\n");
+            exit(1);
+    }
+}
+
 static void update_decimal_string(LargeInt* large_int) {
     if(large_int->decimal_string != NULL)
         free(large_int->decimal_string);
-    
+    int digit = get_digit(large_int);
+    large_int->decimal_string = (char*)malloc(sizeof(char) * (digit + 1));
+    if(large_int->decimal_string == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        exit(1);
+    }
+    // 最後尾にnull文字をいれておく
+    large_int->decimal_string[digit] = '\0';
+
+    if(is_empty(&large_int->unsigned_value)) {
+        large_int->decimal_string[0] = '0';
+        return;
+    }
+
+    LargeInt scale;
+    init_large_int(&scale);
+    hex_string_to_large_int("1", &scale);
+
+    LargeInt ten;
+    init_large_int(&ten);
+    hex_string_to_large_int("a", &ten);
+
+    LargeInt clone;
+    init_large_int(&clone);
+    copy_large_int(large_int, &clone);
+
+    // まずはscaleを10進数でlarge_intと同じ桁数にする
+    for(int i = 0; i < digit - 1; i++) {
+        large_multiply(&scale, &ten, &scale);
+    }
+
+    // 10進数の各桁で何回割り算ができるかを調べて文字列にする
+    int index = 0;
+    while(scale.unsigned_value.head->key != 0) {
+        uint32_t counter = 0;
+        while(is_less_than_or_equal_to(&scale, &clone)) {
+            large_sub(&clone, &scale, &clone);
+            counter++;
+        }
+        large_int->decimal_string[index] = decimal_digit_to_char(counter);
+        index++;
+        large_divide(&scale, &ten, &scale);
+    }
+
+    release_large_int(&clone);
+    release_large_int(&ten);
+    release_large_int(&scale);
 }
 
 // LargeIntは最後に必ずこの関数を使ってメモリを開放する
