@@ -21,8 +21,8 @@ int main(int argc, char** argv) {
     LargeInt result;
     init_large_int(&result);
     do_operation(&operand1, argv[2][0], &operand2, &result);
-    print_hex(&result);
-    print_binary(&result);
+    print_hex_string(&result);
+    print_binary_string(&result);
 
     release_large_int(&result);
     release_large_int(&operand2);

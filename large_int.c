@@ -484,13 +484,13 @@ void release_large_int(LargeInt* large_int) {
     }
 }
 
-void print_hex(LargeInt* large_int) {
+void print_hex_string(LargeInt* large_int) {
     update_hex_string(large_int);
     printf("%c0x", get_sign_char(large_int));
     puts(large_int->hex_string);
 }
 
-void print_binary(LargeInt* large_int) {
+void print_binary_string(LargeInt* large_int) {
     update_binary_string(large_int);
     printf("%c0b", get_sign_char(large_int));
     puts(large_int->binary_string);

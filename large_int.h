@@ -22,5 +22,5 @@ void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result);   // re
 void release_large_int(LargeInt*); // LargeIntは最後に必ずこの関数でメモリを開放する
 void print_number(LargeInt*);
 int get_digit(LargeInt*);
-void print_hex(LargeInt*);
-void print_binary(LargeInt*);
+void print_hex_string(LargeInt*);
+void print_binary_string(LargeInt*);
