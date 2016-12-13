@@ -416,7 +416,6 @@ static void update_hex_string(LargeInt* large_int) {
 static void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
-    // 文字列の長さはノードの数とuint32のビット数
 
     if(is_empty(&large_int->unsigned_value)) {
         large_int->binary_string = (char*)malloc(sizeof(char) * 2);
@@ -428,7 +427,8 @@ static void update_binary_string(LargeInt* large_int) {
         large_int->binary_string[1] = '\0';
         return;
     }
-
+    
+    // 文字列の長さはノードの数とuint32のビット数
     int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
     // null文字が入るので1足す
