@@ -8,6 +8,7 @@
 
 static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
+static void update_decimal_string(LargeInt*);
 static char get_sign_char(LargeInt*);
 
 static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int);
@@ -452,6 +453,8 @@ static void update_binary_string(LargeInt* large_int) {
     reverse_string(large_int->binary_string);
 }
 
+static void update_decimal_string()
+
 static void swap(char* a, char* b) {
     char tmp = *a;
     *a = *b;
@@ -494,6 +497,12 @@ void print_binary_string(LargeInt* large_int) {
     update_binary_string(large_int);
     printf("%c0b", get_sign_char(large_int));
     puts(large_int->binary_string);
+}
+
+void print_decimal_string(LargeInt* large_int) {
+    update_decimal_string(large_int);
+    printf("%c0d", get_sign_char(large_int));
+    puts(large_int->decimal_string);
 }
 
 static char get_sign_char(LargeInt* large_int) {
