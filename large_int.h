@@ -4,7 +4,6 @@
 #include "list.h"
 
 // char*型の要素に直接代入をしてはいけない
-// 必ずupdate関数を使うこと
 typedef struct {
     int is_negative;
     List unsigned_value;
@@ -20,10 +19,8 @@ void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result);     // re
 void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result);    // result = former - latter
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* result); // result = former * latter
 void large_divide(LargeInt* former, LargeInt* latter, LargeInt* result);   // result = former / latter
-void update_hex_string(LargeInt*);
-void update_binary_string(LargeInt*);
 void release_large_int(LargeInt*); // LargeIntは最後に必ずこの関数でメモリを開放する
 void print_number(LargeInt*);
 int get_digit(LargeInt*);
-void print_hex(LargeInt*);
-void print_binary(LargeInt*);
+void print_hex_string(LargeInt*);
+void print_binary_string(LargeInt*);

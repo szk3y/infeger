@@ -4,8 +4,16 @@
 #include <string.h>
 #include "large_int.h"
 
+// HACK: formerとかlatterとかをいい感じの名前に
+
+static void update_hex_string(LargeInt*);
+static void update_binary_string(LargeInt*);
+static char get_sign_char(LargeInt*);
+
+static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int);
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
+
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
 static void large_sub(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a - b
@@ -20,11 +28,11 @@ static void multiply_large_and_small(LargeInt* a, uint32_t b, LargeInt* result);
 static void large_shift_left(LargeInt*); // LargeIntを1つだけ左論理シフトする
 static void large_shift_right(LargeInt*); // LargeIntを1つだけ右論理シフトする
 
-
-// uint32_tの16進数での桁数(8)
-static const int kHexDigitsInUInt = sizeof(uint32_t) * 2;
-// uint32_tのビット数(32)
-static const int kNumOfBitsInUInt = sizeof(uint32_t) * 8;
+// いらないかもしれない
+// uint32_tの16進数での桁数
+static const int kHexDigitsInUInt = 8;
+// uint32_tのビット数
+static const int kNumOfBitsInUInt = 32;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -42,19 +50,23 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
 
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     release_large_int(large_int);
-    large_int->is_negative = (hex_string[0] == '-');
-
-    int length = kHexDigitsInUInt;
+    large_int->is_negative = hex_string[0] == '-';
     // 文字列が負のとき，iは1から始まる．
-    for(int i = large_int->is_negative; i < (int)strlen(hex_string); i = i + length) {
-        // 最初の処理は残りの桁数がuint32_tで割り切れるように調節する
-        if(i == large_int->is_negative && (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt != 0) {
-            length = (strlen(hex_string) - large_int->is_negative) % kHexDigitsInUInt;
+    unsigned_hex_string_to_large_int(hex_string + large_int->is_negative, large_int);
+}
+
+static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
+    int length = kHexDigitsInUInt;
+    for(int i = 0; i < (int)strlen(hex_string); i = i + length) {
+        // 最初の処理は残りの桁数がuint32_tで割り切れるように長さを調節する
+        if(i == 0 && strlen(hex_string) % kHexDigitsInUInt != 0) {
+            length = strlen(hex_string) % kHexDigitsInUInt;
         } else {
             length = kHexDigitsInUInt;
         }
         push_back(&large_int->unsigned_value, word_to_uint(hex_string, i, length));
     }
+    remove_zero_nodes(large_int);
 }
 
 // beginning_indexを呼び出す側でhex_stringに足しておくというのもアリか？
@@ -168,6 +180,10 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
 
 // 1bitずつ筆算方式で求める
 void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
+    if(securely_get_value(divisor->unsigned_value.head) == 0) {
+        fprintf(stderr, "zero division\n");
+        exit(1);
+    }
     int is_negative = divident->is_negative != divisor->is_negative;
     // この数字から引いていく
     LargeInt current_divident;
@@ -181,6 +197,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     // 結果を一時的に保持する
     LargeInt quotient;
     init_large_int(&quotient);
+    hex_string_to_large_int("0", &quotient);
     // 引き算できる場合どのbitをオンにするかを示す
     LargeInt current_bit;
     init_large_int(&current_bit);
@@ -358,7 +375,7 @@ static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
 }
 
 // LargeIntのunsigned_valueからhex_stringを更新する
-void update_hex_string(LargeInt* large_int) {
+static void update_hex_string(LargeInt* large_int) {
     if(large_int->hex_string != NULL)
         free(large_int->hex_string);
     int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt;
@@ -371,6 +388,7 @@ void update_hex_string(LargeInt* large_int) {
         }
         large_int->hex_string[0] = '0';
         large_int->hex_string[1] = '\0';
+        return;
     }
 
     // null文字が入るので1足す
@@ -389,7 +407,7 @@ void update_hex_string(LargeInt* large_int) {
 }
 
 // LargeIntのunsigned_valueからbinary_stringを更新する
-void update_binary_string(LargeInt* large_int) {
+static void update_binary_string(LargeInt* large_int) {
     if(large_int->binary_string != NULL)
         free(large_int->binary_string);
     // 文字列の長さはノードの数とuint32のビット数
@@ -403,6 +421,7 @@ void update_binary_string(LargeInt* large_int) {
         }
         large_int->binary_string[0] = '0';
         large_int->binary_string[1] = '\0';
+        return;
     }
 
     // null文字が入るので1足す
@@ -411,12 +430,14 @@ void update_binary_string(LargeInt* large_int) {
         fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
+    large_int->binary_string[string_length] = '\0';
 
     // HACK: iとcurrent_node
     // 数値は右から1ビットずつ0か1かを判定するほうが簡単だが，文字列は左側から埋めていくほうが簡単(あまり変わらない気もするが)
     // 文字列を一旦左側から作って最後に反転させる
     Node* current_node = large_int->unsigned_value.last;
-    for(int i = 0; current_node != NULL; current_node = current_node->prev_node) {
+    int i;
+    for(i = 0; current_node != NULL; current_node = current_node->prev_node) {
         uint32_t current_value = current_node->key;
         for(int j = 0; j < kNumOfBitsInUInt; j++) {
             if(current_value % 2 == 0) {
@@ -426,10 +447,6 @@ void update_binary_string(LargeInt* large_int) {
             }
             current_value = current_value >> 1;
             i++;
-
-            // 大量の0が頭につくのを防ぐ
-            if(current_value == 0 && current_node == large_int->unsigned_value.head)
-                break;
         }
     }
     reverse_string(large_int->binary_string);
@@ -467,10 +484,21 @@ void release_large_int(LargeInt* large_int) {
     }
 }
 
-void print_hex(LargeInt* large_int) {
+void print_hex_string(LargeInt* large_int) {
+    update_hex_string(large_int);
+    printf("%c0x", get_sign_char(large_int));
     puts(large_int->hex_string);
 }
 
-void print_binary(LargeInt* large_int) {
+void print_binary_string(LargeInt* large_int) {
+    update_binary_string(large_int);
+    printf("%c0b", get_sign_char(large_int));
     puts(large_int->binary_string);
+}
+
+static char get_sign_char(LargeInt* large_int) {
+    if(large_int->is_negative && securely_get_value(large_int->unsigned_value.head) != 0)
+        return '-';
+    else
+        return '+';
 }
