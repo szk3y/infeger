@@ -127,7 +127,7 @@ static uint32_t hex_char_to_uint(char hex_char) {
         case 'F':
             return 15;
         default:
-            puts("hex_char_to_uint: Invalid input");
+            fprintf(stderr, "hex_char_to_uint: Invalid argument\n");
             exit(1);
     }
 }
@@ -186,7 +186,7 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
 // 1bitずつ筆算方式で求める
 void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     if(securely_get_value(divisor->unsigned_value.head) == 0) {
-        fprintf(stderr, "zero division\n");
+        fprintf(stderr, "large_divide: zero division\n");
         exit(1);
     }
     int is_negative = divident->is_negative != divisor->is_negative;
@@ -387,7 +387,7 @@ static void update_hex_string(LargeInt* large_int) {
     if(is_empty(&large_int->unsigned_value)) {
         large_int->hex_string = (char*)malloc(sizeof(char) * 2);
         if(large_int->hex_string == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         large_int->hex_string[0] = '0';
@@ -400,7 +400,7 @@ static void update_hex_string(LargeInt* large_int) {
     // null文字が入るので1足す
     large_int->hex_string = (char*)malloc(sizeof(char) * (string_length + 1));
     if(large_int->hex_string == NULL) {
-        puts("Failed to allocate memory");
+        fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
     Node* current_node = large_int->unsigned_value.head;
@@ -421,7 +421,7 @@ static void update_binary_string(LargeInt* large_int) {
     if(is_empty(&large_int->unsigned_value)) {
         large_int->binary_string = (char*)malloc(sizeof(char) * 2);
         if(large_int->binary_string == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         large_int->binary_string[0] = '0';

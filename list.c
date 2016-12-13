@@ -40,7 +40,7 @@ void push_back(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         init_node(list->head);
@@ -49,7 +49,7 @@ void push_back(List* list, uint32_t key) {
     } else {
         list->last->next_node = (Node*)malloc(sizeof(Node));
         if(list->last->next_node == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         init_node(list->last->next_node);
@@ -66,7 +66,7 @@ void push_front(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         init_node(list->head);
@@ -75,7 +75,7 @@ void push_front(List* list, uint32_t key) {
     } else {
         list->head->prev_node = (Node*)malloc(sizeof(Node));
         if(list->head->prev_node == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
         init_node(list->head->prev_node);
