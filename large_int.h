@@ -25,3 +25,4 @@ int get_digit(LargeInt*);
 void print_hex_string(LargeInt*);
 void print_binary_string(LargeInt*);
 void print_decimal_string(LargeInt*);
+void debug_print_large_int(LargeInt*);

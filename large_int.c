@@ -427,7 +427,7 @@ static void update_binary_string(LargeInt* large_int) {
         large_int->binary_string[1] = '\0';
         return;
     }
-    
+
     // 文字列の長さはノードの数とuint32のビット数
     int string_length = get_length(&large_int->unsigned_value) * kNumOfBitsInUInt;
 
@@ -618,4 +618,9 @@ static char get_sign_char(LargeInt* large_int) {
         return '-';
     else
         return '+';
+}
+
+void debug_print_large_int(LargeInt* large_int) {
+    printf("LargeInt: \n");
+    
 }
