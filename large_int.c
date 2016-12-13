@@ -6,6 +6,8 @@
 
 // HACK: formerとかlatterとかをいい感じの名前に
 
+// 空のリストが渡される可能性を考慮すること
+
 static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
 static void update_decimal_string(LargeInt*);
@@ -162,19 +164,20 @@ void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     int is_negative = former->is_negative != latter->is_negative;
     LargeInt origin;
     init_large_int(&origin);
+    LargeInt tmp;
+    init_large_int(&tmp);
     // HACK: uint何個分左シフトするかを数える．他の方法を考える
     int counter = 0;
-    for(Node* node = latter->unsigned_value.head; node != NULL; node = node->next_node) {
-        LargeInt tmp;
-        init_large_int(&tmp);
+    for(Node* node = latter->unsigned_value.last; node != NULL; node = node->prev_node) {
         // formerとlatterの一部をかけて結果をtmpに保存する
         multiply_large_and_small(former, node->key, &tmp);
         push_back_zero_nodes(&tmp, counter);
         counter++;
         large_add(&origin, &tmp, &origin);
-        release_large_int(&tmp);
     }
     copy_large_int(&origin, clone);
+
+    release_large_int(&tmp);
     release_large_int(&origin);
     clone->is_negative = is_negative;
 }
@@ -265,7 +268,7 @@ static void multiply_large_and_small(LargeInt* large, uint32_t small, LargeInt* 
         push_front(&buffer.unsigned_value, (uint32_t)new_value);
         // new_valueの上半分を桁上げとして保存
         carry = new_value >> kNumOfBitsInUInt;
-        arg_node = arg_node->prev_node;
+        arg_node = securely_get_prev_node(arg_node);
     }
     remove_zero_nodes(&buffer);
     copy_large_int(&buffer, result);
@@ -453,8 +456,6 @@ static void update_binary_string(LargeInt* large_int) {
     reverse_string(large_int->binary_string);
 }
 
-static void update_decimal_string()
-
 static void swap(char* a, char* b) {
     char tmp = *a;
     *a = *b;
@@ -467,6 +468,33 @@ static void reverse_string(char* string) {
         // -1はnull文字を避けるため
         swap(&string[i], &string[length - i - 1]);
     }
+}
+
+int get_digit(LargeInt* large_int) {
+    // 10，100などの値を保持する
+    LargeInt scale;
+    init_large_int(&scale);
+    hex_string_to_large_int("a", &scale);
+
+    LargeInt ten;
+    init_large_int(&ten);
+    hex_string_to_large_int("a", &ten);
+
+    int counter = 1;
+    while(is_less_than_or_equal_to(&scale, large_int)) {
+        counter++;
+        large_multiply(&scale, &ten, &scale);
+    }
+
+    release_large_int(&ten);
+    release_large_int(&scale);
+    return counter;
+}
+
+static void update_decimal_string(LargeInt* large_int) {
+    if(large_int->decimal_string != NULL)
+        free(large_int->decimal_string);
+    
 }
 
 // LargeIntは最後に必ずこの関数を使ってメモリを開放する
