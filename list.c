@@ -126,3 +126,26 @@ void release_list(List* list) {
     list->head = NULL;
     list->last = NULL;
 }
+
+void debug_print_node(Node* node) {
+    printf("  Node:\n");
+    printf("    prev_node: ");
+    print_address(node->prev_node);
+    printf("    next_node: ");
+    print_address(node->next_node);
+    printf("    key:       %d\n", node->key);
+
+    // if(node->prev_node == NULL) {
+    //     printf("NULL\n");
+    // } else {
+    //     printf("0x%p\n", node->prev_node);
+    // }
+}
+
+void print_address(void* pointer) {
+    if(pointer == NULL) {
+        printf("NULL\n");
+    } else {
+        printf("%p\n", pointer);
+    }
+}

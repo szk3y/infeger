@@ -26,3 +26,6 @@ void pop_front(List*); // Listの先頭要素を破棄する
 Node* securely_get_prev_node(Node*); // NULLを渡されると停止せずNULLを返す
 uint32_t securely_get_value(Node*); // NULLを渡されると停止せず0を返す
 void release_list(List*); // Listは最後に必ずこの関数を使ってメモリを開放する
+void debug_print_list(List*); // Listの情報を表示する
+void debug_print_node(Node*); // Nodeの情報を表示する
+void print_address(void*); // 0xaaもしくはNULLのようにアドレスを表示して改行

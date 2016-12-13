@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
     LargeInt operand1;
     init_large_int(&operand1);
     hex_string_to_large_int(argv[1], &operand1);
+    debug_print_node(operand1.unsigned_value.head);
 
     LargeInt operand2;
     init_large_int(&operand2);
