@@ -14,7 +14,6 @@ int main(int argc, char** argv) {
     LargeInt operand1;
     init_large_int(&operand1);
     hex_string_to_large_int(argv[1], &operand1);
-    debug_print_list(&operand1.unsigned_value);
 
     LargeInt operand2;
     init_large_int(&operand2);
@@ -27,6 +26,8 @@ int main(int argc, char** argv) {
     print_binary_string(&result);
     print_decimal_string(&result);
     printf("Digit: %d\n", get_digit(&result));
+
+    debug_print_large_int(&result);
 
     release_large_int(&result);
     release_large_int(&operand2);

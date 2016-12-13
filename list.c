@@ -128,11 +128,16 @@ void release_list(List* list) {
 }
 
 void debug_print_list(List* list) {
-    printf("  List:\n");
-    printf("    head: ");
+    printf("  List:           %p\n", list);
+    printf("    head:  ");
     print_address(list->head);
-    printf("    last: ");
+    printf("    last:  ");
     print_address(list->last);
+    printf("    value: 0x");
+    for(Node* node = list->head; node != NULL; node = node->next_node) {
+        printf(" %08x", node->key);
+    }
+    puts("");
     printf("    -----head-----\n");
     for(Node* node = list->head; node != NULL; node = node->next_node) {
         debug_print_node(node);
@@ -141,12 +146,12 @@ void debug_print_list(List* list) {
 }
 
 void debug_print_node(Node* node) {
-    printf("      Node:\n");
+    printf("      Node: %p\n", node);
     printf("        prev_node: ");
     print_address(node->prev_node);
+    printf("        key:       0x%08x\n", node->key);
     printf("        next_node: ");
     print_address(node->next_node);
-    printf("        key:       %d\n", node->key);
 }
 
 void print_address(void* pointer) {

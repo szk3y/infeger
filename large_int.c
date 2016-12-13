@@ -32,6 +32,8 @@ static void multiply_large_and_small(LargeInt* a, uint32_t b, LargeInt* result);
 static void large_shift_left(LargeInt*); // LargeIntを1つだけ左論理シフトする
 static void large_shift_right(LargeInt*); // LargeIntを1つだけ右論理シフトする
 
+static void debug_print_string(char*);
+
 // いらないかもしれない
 // uint32_tの16進数での桁数
 static const int kHexDigitsInUInt = 8;
@@ -621,6 +623,22 @@ static char get_sign_char(LargeInt* large_int) {
 }
 
 void debug_print_large_int(LargeInt* large_int) {
-    printf("LargeInt: \n");
-    
+    printf("LargeInt: %p\n", large_int);
+    printf("  is_negative:    %d\n", large_int->is_negative);
+    printf("  decimal_string: ");
+    print_address(large_int->decimal_string);
+    debug_print_string(large_int->decimal_string);
+    printf("  binary_string:  ");
+    print_address(large_int->binary_string);
+    debug_print_string(large_int->binary_string);
+    printf("  hex_string:     ");
+    print_address(large_int->hex_string);
+    debug_print_string(large_int->hex_string);
+    debug_print_list(&large_int->unsigned_value);
+}
+
+static void debug_print_string(char* string) {
+    if(string == NULL)
+        return;
+    printf("    %s\n", string);
 }
