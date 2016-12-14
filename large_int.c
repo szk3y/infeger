@@ -17,6 +17,7 @@ static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_i
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
 static char decimal_digit_to_char(uint32_t); // 0~9の数字を文字に変換する
+static void unsigned_decimal_string_to_large_int(char*, LargeInt*);
 
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
@@ -36,9 +37,11 @@ static void debug_print_string(char*);
 
 // いらないかもしれない
 // uint32_tの16進数での桁数
-static const int kHexDigitsInUInt = 8;
+static const int kHexDigitInUInt = 8;
 // uint32_tのビット数
 static const int kNumOfBitsInUInt = 32;
+// uint32_tですべて表現できる10進数の桁数
+static const int kSafeDecimalDigitInUInt = 9;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -54,6 +57,16 @@ void copy_large_int(LargeInt* origin, LargeInt* clone) {
     copy_list(&origin->unsigned_value, &clone->unsigned_value);
 }
 
+void decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
+    release_large_int(large_int);
+    large_int->is_negative = decimal_string[0] == '-';
+    unsigned_decimal_string_to_large_int(decimal_string + large_int->is_negative, large_int);
+}
+
+static void unsigned_decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
+
+}
+
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
     release_large_int(large_int);
     large_int->is_negative = hex_string[0] == '-';
@@ -62,13 +75,13 @@ void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
 }
 
 static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int) {
-    int length = kHexDigitsInUInt;
+    int length = kHexDigitInUInt;
     for(int i = 0; i < (int)strlen(hex_string); i = i + length) {
         // 最初の処理は残りの桁数がuint32_tで割り切れるように長さを調節する
-        if(i == 0 && strlen(hex_string) % kHexDigitsInUInt != 0) {
-            length = strlen(hex_string) % kHexDigitsInUInt;
+        if(i == 0 && strlen(hex_string) % kHexDigitInUInt != 0) {
+            length = strlen(hex_string) % kHexDigitInUInt;
         } else {
-            length = kHexDigitsInUInt;
+            length = kHexDigitInUInt;
         }
         push_back(&large_int->unsigned_value, word_to_uint(hex_string, i, length));
     }
@@ -397,7 +410,7 @@ static void update_hex_string(LargeInt* large_int) {
         return;
     }
 
-    int string_length = get_length(&large_int->unsigned_value) * kHexDigitsInUInt;
+    int string_length = get_length(&large_int->unsigned_value) * kHexDigitInUInt;
 
     // null文字が入るので1足す
     large_int->hex_string = (char*)malloc(sizeof(char) * (string_length + 1));
@@ -409,7 +422,7 @@ static void update_hex_string(LargeInt* large_int) {
     for(int i = 0; i < get_length(&large_int->unsigned_value); i++) {
         // uint32_t一つぶんを文字列に変換する
         // 実は毎回出るnullバイトを塗りつぶしている
-        snprintf(large_int->hex_string + i * kHexDigitsInUInt, kHexDigitsInUInt + 1, "%08x", current_node->key);
+        snprintf(large_int->hex_string + i * kHexDigitInUInt, kHexDigitInUInt + 1, "%08x", current_node->key);
         current_node = current_node->next_node;
     }
 }
