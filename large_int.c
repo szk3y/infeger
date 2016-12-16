@@ -66,32 +66,47 @@ void decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
     unsigned_decimal_string_to_large_int(decimal_string + large_int->is_negative, large_int);
 }
 
+// 10進数の数を小分けにしてlarge_intに足していく
 static void unsigned_decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
+    release_large_int(large_int);
     // 10進数の数字をkSafeDecimalDigitInUIntと同じ桁数ずつノードにいれる
     List dummy_large_int;
     init_list(&dummy_large_int);
+    
+    // 残りの数をきれいに入れるために最初の処理で桁数を合わせる
     int first_length = strlen(decimal_string) % kSafeDecimalDigitInUInt;
     if(first_length != 0) {
         push_back(&dummy_large_int, sub_string_to_uint32(decimal_string, 0, first_length));
     }
+
     for(int i = first_length; i < (int)strlen(decimal_string); i = i + kSafeDecimalDigitInUInt) {
         push_back(&dummy_large_int, sub_string_to_uint32(decimal_string, i, kSafeDecimalDigitInUInt));
     }
 
-    uint64_t carry = 0;
-    for(Node* node = large_int->unsigned_value.last; node != NULL; node = node->prev_node) {
-        // 現在のノードと次のノードの値と次の次のノードから1借りてきた値を足す
-        // 前の前のノードから借りられた分を引いておく
-        uint64_t new_value =
-            carry +
-            (uint64_t)node->key +
-            (uint64_t)securely_get_value(securely_get_prev_node(node)) * kNextKeyScale +
-            (uint64_t)has_next_next_node(node) * kNextKeyScale * kNextKeyScale -
-            (uint64_t)has_prev_prev_node(node) * kNextKeyScale;
-        push_back(&large_int->unsigned_value, (uint32_t)new_value);
-        carry = new_value >> kNumOfBitsInUInt;
+    // kNextKeyScaleをintからLargeIntに変換
+    LargeInt scale;
+    init_large_int(&scale);
+    push_back(&scale.unsigned_value, kNextKeyScale);
+
+    int counter = 0;
+    for(Node* node = dummy_large_int.last; node != NULL; node = node->prev_node) {
+        // dummy_large_int->nodeからLargeIntに変換
+        LargeInt tmp;
+        init_large_int(&tmp);
+        push_back(&tmp.unsigned_value, node->key);
+
+        // 実際の値に直す
+        for(int i = 0; i < counter; i++) {
+            large_multiply(&tmp, &scale, &tmp);
+        }
+        large_add(large_int, &tmp, large_int);
+
+        counter++;
+        release_large_int(&tmp);
     }
 
+    remove_zero_nodes(large_int);
+    release_large_int(&scale);
     release_list(&dummy_large_int);
 }
 

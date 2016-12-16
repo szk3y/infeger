@@ -123,11 +123,11 @@ uint32_t securely_get_value(Node* current_node) {
 }
 
 int has_prev_prev_node(Node* node) {
-    return securely_get_prev_node(securely_get_prev_node(node)) == NULL;
+    return securely_get_prev_node(node->prev_node) != NULL;
 }
 
 int has_next_next_node(Node* node) {
-    return securely_get_next_node(securely_get_next_node(node)) == NULL;
+    return securely_get_next_node(node->next_node) != NULL;
 }
 
 void release_list(List* list) {

@@ -25,8 +25,8 @@ void push_front(List*, uint32_t); // Listの前に新しいノードをつける
 void pop_front(List*); // Listの先頭要素を破棄する
 Node* securely_get_prev_node(Node*); // NULLを渡されると停止せずNULLを返す
 uint32_t securely_get_value(Node*); // NULLを渡されると停止せず0を返す
-int has_prev_prev_node(Node*); // node->prev->prev == NULLを返す．ぬるぽ防止
-int has_next_next_node(Node*); // node->next->next == NULLを返す．ぬるぽ防止
+int has_prev_prev_node(Node*); // node->prev->prev != NULLを返す．ぬるぽ防止
+int has_next_next_node(Node*); // node->next->next != NULLを返す．ぬるぽ防止
 void release_list(List*); // Listは最後に必ずこの関数を使ってメモリを開放する
 void debug_print_list(List*); // Listの情報を表示する
 void debug_print_node(Node*); // Nodeの情報を表示する
