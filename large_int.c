@@ -18,6 +18,7 @@ static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進�
 static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして返す
 static char decimal_digit_to_char(uint32_t); // 0~9の数字を文字に変換する
 static void unsigned_decimal_string_to_large_int(char*, LargeInt*);
+static uint32_t sub_string_to_uint32(char*, int, int);
 
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
@@ -42,6 +43,8 @@ static const int kHexDigitInUInt = 8;
 static const int kNumOfBitsInUInt = 32;
 // uint32_tですべて表現できる10進数の桁数
 static const int kSafeDecimalDigitInUInt = 9;
+// dummy_large_intで次のノードにかける数
+static const int kNextKeyScale = 1000000000;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
@@ -64,7 +67,39 @@ void decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
 }
 
 static void unsigned_decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
+    // 10進数の数字をkSafeDecimalDigitInUIntと同じ桁数ずつノードにいれる
+    List dummy_large_int;
+    init_list(&dummy_large_int);
+    int first_length = strlen(decimal_string) % kSafeDecimalDigitInUInt;
+    if(first_length != 0) {
+        push_back(&dummy_large_int, sub_string_to_uint32(decimal_string, 0, first_length));
+    }
+    for(int i = first_length; i < (int)strlen(decimal_string); i = i + kSafeDecimalDigitInUInt) {
+        push_back(&dummy_large_int, sub_string_to_uint32(decimal_string, i, kSafeDecimalDigitInUInt));
+    }
 
+    uint64_t carry = 0;
+    for(Node* node = large_int->unsigned_value.last; node != NULL; node = node->prev_node) {
+        // 現在のノードと次のノードの値と次の次のノードから1借りてきた値を足す
+        // 前の前のノードから借りられた分を引いておく
+        uint64_t new_value =
+            carry +
+            (uint64_t)node->key +
+            (uint64_t)securely_get_value(securely_get_prev_node(node)) * kNextKeyScale +
+            (uint64_t)has_next_next_node(node) * kNextKeyScale * kNextKeyScale -
+            (uint64_t)has_prev_prev_node(node) * kNextKeyScale;
+        push_back(&large_int->unsigned_value, (uint32_t)new_value);
+        carry = new_value >> kNumOfBitsInUInt;
+    }
+
+    release_list(&dummy_large_int);
+}
+
+static uint32_t sub_string_to_uint32(char* string, int beginning_index, int length) {
+    char buffer[kSafeDecimalDigitInUInt + 1];
+    buffer[length] = '\0';
+    strncpy(buffer, string + beginning_index, length);
+    return (uint32_t)atol(buffer);
 }
 
 void hex_string_to_large_int(char* hex_string, LargeInt* large_int) {

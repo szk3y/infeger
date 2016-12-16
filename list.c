@@ -108,11 +108,26 @@ Node* securely_get_prev_node(Node* current_node) {
         return current_node->prev_node;
 }
 
+Node* securely_get_next_node(Node* current_node) {
+    if(current_node == NULL)
+        return NULL;
+    else
+        return current_node->next_node;
+}
+
 uint32_t securely_get_value(Node* current_node) {
     if(current_node == NULL)
         return 0;
     else
         return current_node->key;
+}
+
+int has_prev_prev_node(Node* node) {
+    return securely_get_prev_node(securely_get_prev_node(node)) == NULL;
+}
+
+int has_next_next_node(Node* node) {
+    return securely_get_next_node(securely_get_next_node(node)) == NULL;
 }
 
 void release_list(List* list) {
