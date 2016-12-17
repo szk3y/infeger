@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +25,8 @@ static uint32_t sub_string_to_uint32(char*, int, int);
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
 static void large_sub(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a - b
 
-static int is_less_than(LargeInt* former, LargeInt* latter); // |former| < |latter|を返す
-static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter); // |former| <= |latter|を返す
+static bool is_less_than(LargeInt* former, LargeInt* latter); // |former| < |latter|を返す
+static bool is_less_than_or_equal_to(LargeInt* former, LargeInt* latter); // |former| <= |latter|を返す
 static void swap(char*, char*); // aとbを入れ替える
 static void reverse_string(char*); // 文字列を反転させる
 static void remove_zero_nodes(LargeInt*); // 左側の不要な値0のノードをできるだけ消す
@@ -48,7 +49,7 @@ static const int kNextKeyScale = 1000000000;
 
 // LargeIntは最初に必ずこの関数を使って初期化する
 void init_large_int(LargeInt* large_int) {
-    large_int->is_negative = 0;
+    large_int->is_negative = false;
     init_list(&large_int->unsigned_value);
     large_int->decimal_string = NULL;
     large_int->binary_string  = NULL;
@@ -72,7 +73,7 @@ static void unsigned_decimal_string_to_large_int(char* decimal_string, LargeInt*
     // 10進数の数字をkSafeDecimalDigitInUIntと同じ桁数ずつノードにいれる
     List dummy_large_int;
     init_list(&dummy_large_int);
-    
+
     // 残りの数をきれいに入れるために最初の処理で桁数を合わせる
     int first_length = strlen(decimal_string) % kSafeDecimalDigitInUInt;
     if(first_length != 0) {
@@ -227,7 +228,7 @@ void large_minus(LargeInt* former, LargeInt* latter, LargeInt* result) {
 // bufferやtmpのような名前が2つ出そうになったので変数名にorigin,cloneを使ってみた
 void large_multiply(LargeInt* former, LargeInt* latter, LargeInt* clone) {
     // releaseのタイミングがややこしくなりそうなので符号を先に決めておく
-    int is_negative = former->is_negative != latter->is_negative;
+    bool is_negative = former->is_negative != latter->is_negative;
     LargeInt origin;
     init_large_int(&origin);
     LargeInt tmp;
@@ -254,7 +255,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
         fprintf(stderr, "large_divide: zero division\n");
         exit(1);
     }
-    int is_negative = divident->is_negative != divisor->is_negative;
+    bool is_negative = divident->is_negative != divisor->is_negative;
     // この数字から引いていく
     LargeInt current_divident;
     init_large_int(&current_divident);
@@ -414,7 +415,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
 }
 
 // |former| < |latter|を返す
-static int is_less_than(LargeInt* former, LargeInt* latter) {
+static bool is_less_than(LargeInt* former, LargeInt* latter) {
     if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
         return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
     Node* former_node = former->unsigned_value.head;
@@ -430,7 +431,7 @@ static int is_less_than(LargeInt* former, LargeInt* latter) {
 
 // |former| <= |latter|を返す
 // 最後以外はis_less_thanのコピー
-static int is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
+static bool is_less_than_or_equal_to(LargeInt* former, LargeInt* latter) {
     if(get_length(&former->unsigned_value) != get_length(&latter->unsigned_value))
         return get_length(&former->unsigned_value) < get_length(&latter->unsigned_value);
     Node* former_node = former->unsigned_value.head;

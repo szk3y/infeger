@@ -1,11 +1,12 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "list.h"
 
 // char*型の要素に直接代入をしてはいけない
 typedef struct {
-    int is_negative;
+    bool is_negative;
     List unsigned_value;
     char* decimal_string;
     char* binary_string;
