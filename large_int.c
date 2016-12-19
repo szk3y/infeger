@@ -13,6 +13,7 @@ static void update_hex_string(LargeInt*);
 static void update_binary_string(LargeInt*);
 static void update_decimal_string(LargeInt*);
 static char get_sign_char(LargeInt*);
+static char* non_zero_starting_string(char*);
 
 static void unsigned_hex_string_to_large_int(char* hex_string, LargeInt* large_int);
 static uint32_t word_to_uint(char*, int beginning_index, int length); // 16進数文字列の32bit整数を32bit整数にする
@@ -261,7 +262,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     init_large_int(&current_divident);
     copy_large_int(divident, &current_divident);
     // この数字を少しずつ小さくして引いていく
-    // 1つ左シフトするとcurrent_dividentを超える値を保つ
+    // current_divident / 2 < current_divisor <= current_divident
     LargeInt current_divisor;
     init_large_int(&current_divisor);
     copy_large_int(divisor, &current_divisor);
@@ -664,19 +665,29 @@ void release_large_int(LargeInt* large_int) {
 void print_hex_string(LargeInt* large_int) {
     update_hex_string(large_int);
     printf("%c0x", get_sign_char(large_int));
-    puts(large_int->hex_string);
+    puts(non_zero_starting_string(large_int->hex_string));
 }
 
 void print_binary_string(LargeInt* large_int) {
     update_binary_string(large_int);
     printf("%c0b", get_sign_char(large_int));
-    puts(large_int->binary_string);
+    puts(non_zero_starting_string(large_int->binary_string));
 }
 
 void print_decimal_string(LargeInt* large_int) {
     update_decimal_string(large_int);
     printf("%c0d", get_sign_char(large_int));
-    puts(large_int->decimal_string);
+    puts(non_zero_starting_string(large_int->decimal_string));
+}
+
+static char* non_zero_starting_string(char* string) {
+    for(int i = 0; i < (int)strlen(string); i++) {
+        if(string[i] != '0') {
+            return string + i;
+        }
+    }
+    // 文字列の末尾
+    return string + strlen(string) - 1;
 }
 
 static char get_sign_char(LargeInt* large_int) {
