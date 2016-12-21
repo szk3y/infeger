@@ -400,7 +400,7 @@ static void large_sub(LargeInt* former, LargeInt* latter, LargeInt* result) {
     Node* former_node = former->unsigned_value.last;
     Node* latter_node = latter->unsigned_value.last;
     uint64_t carry = 0;
-    // carry が残ることはない
+    // carryだけ最後に残ることはない
     while(former_node != NULL || latter_node != NULL) {
         // 片方のリストが短くてもぬるぽしないようにsecurely~を使う
         // 繰り下がりのぶんを予め足しておく
