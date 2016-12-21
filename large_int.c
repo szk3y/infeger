@@ -21,7 +21,7 @@ static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして�
 static char decimal_digit_to_char(uint32_t); // 0~9の数字を文字に変換する
 static void unsigned_decimal_string_to_large_int(char*, LargeInt*);
 static uint32_t sub_string_to_uint32(char*, int, int);
-// static void uint32_to_large_int(uint32_t, LargeInt*);
+static void uint32_to_large_int(uint32_t, LargeInt*);
 
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
@@ -61,6 +61,11 @@ void init_large_int(LargeInt* large_int) {
 void copy_large_int(LargeInt* origin, LargeInt* clone) {
     release_large_int(clone);
     copy_list(&origin->unsigned_value, &clone->unsigned_value);
+}
+
+void uint32_to_large_int(uint32_t num, LargeInt* large_int) {
+    release_large_int(large_int);
+    push_back(&large_int->unsigned_value, num);
 }
 
 void decimal_string_to_large_int(char* decimal_string, LargeInt* large_int) {
