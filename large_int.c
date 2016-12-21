@@ -21,6 +21,7 @@ static uint32_t hex_char_to_uint(char); // 16進数の文字を整数にして�
 static char decimal_digit_to_char(uint32_t); // 0~9の数字を文字に変換する
 static void unsigned_decimal_string_to_large_int(char*, LargeInt*);
 static uint32_t sub_string_to_uint32(char*, int, int);
+// static void uint32_to_large_int(uint32_t, LargeInt*);
 
 // 符号の処理はこの2つの関数の後で行わなければならない
 static void large_add(LargeInt* a, LargeInt* b, LargeInt* result); // 符号を気にせず result = a + b
@@ -275,7 +276,7 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     init_large_int(&current_bit);
     hex_string_to_large_int("1", &current_bit);
 
-    // ぎりぎりdivident以下になるようにcurrent_divisorをシフトして大きくする
+    // dividentより大きくなるまでcurrent_divisorをシフトして大きくする
     while(is_less_than_or_equal_to(&current_divisor, divident)) {
         large_shift_left(&current_divisor);
         large_shift_left(&current_bit);
@@ -626,7 +627,8 @@ static void update_decimal_string(LargeInt* large_int) {
         large_multiply(&scale, &ten, &scale);
     }
 
-    // 10進数の各桁で何回割り算ができるかを調べて文字列にする
+    // 10進数の各桁で何回引き算ができるかを調べて文字列にする
+    // 割り算を使っても良いかもしれない．ただし，答えはLargeIntになるので変換しなければならない．
     int index = 0;
     while(scale.unsigned_value.head->key != 0) {
         uint32_t counter = 0;
@@ -680,6 +682,7 @@ void print_decimal_string(LargeInt* large_int) {
     puts(non_zero_starting_string(large_int->decimal_string));
 }
 
+// 最初の0でない文字のポインタを返す．全て0なら最後の文字を指すポインタを返す．
 static char* non_zero_starting_string(char* string) {
     for(int i = 0; i < (int)strlen(string); i++) {
         if(string[i] != '0') {
