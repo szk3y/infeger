@@ -14,7 +14,7 @@ typedef struct {
 } LargeInt;
 
 void init_large_int(LargeInt*); // LargeIntは最初に必ずこの関数で初期化する
-void copy_large_int(LargeInt* origin, LargeInt* clone); // clone = origin
+void copy_large_int(LargeInt* origin, LargeInt* clone); // clone = origin; 順番逆にしたい
 void hex_string_to_large_int(char*, LargeInt*);
 void decimal_string_to_large_int(char*, LargeInt*);
 void large_plus(LargeInt* former, LargeInt* latter, LargeInt* result);     // result = former + latter
