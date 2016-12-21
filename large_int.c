@@ -275,11 +275,11 @@ void large_divide(LargeInt* divident, LargeInt* divisor, LargeInt* result) {
     // 結果を一時的に保持する
     LargeInt quotient;
     init_large_int(&quotient);
-    hex_string_to_large_int("0", &quotient);
+    uint32_to_large_int(0, &quotient);
     // 引き算できる場合どのbitをオンにするかを示す
     LargeInt current_bit;
     init_large_int(&current_bit);
-    hex_string_to_large_int("1", &current_bit);
+    uint32_to_large_int(1, &current_bit);
 
     // dividentより大きくなるまでcurrent_divisorをシフトして大きくする
     while(is_less_than_or_equal_to(&current_divisor, divident)) {
@@ -553,11 +553,11 @@ int get_digit(LargeInt* large_int) {
     // 10，100などの値を保持する
     LargeInt scale;
     init_large_int(&scale);
-    hex_string_to_large_int("a", &scale);
+    uint32_to_large_int(10, &scale);
 
     LargeInt ten;
     init_large_int(&ten);
-    hex_string_to_large_int("a", &ten);
+    uint32_to_large_int(10, &ten);
 
     int counter = 1;
     while(is_less_than_or_equal_to(&scale, large_int)) {
@@ -617,11 +617,11 @@ static void update_decimal_string(LargeInt* large_int) {
 
     LargeInt scale;
     init_large_int(&scale);
-    hex_string_to_large_int("1", &scale);
+    uint32_to_large_int(1, &scale);
 
     LargeInt ten;
     init_large_int(&ten);
-    hex_string_to_large_int("a", &ten);
+    uint32_to_large_int(10, &ten);
 
     LargeInt clone;
     init_large_int(&clone);
