@@ -1,8 +1,8 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "list.h"
-
-// #define DEBUG
 
 
 void init_node(Node* node) {
@@ -16,7 +16,14 @@ void init_list(List* list) {
     list->last = NULL;
 }
 
-int is_empty(List* list) {
+void copy_list(List* origin, List* clone) {
+    release_list(clone);
+    for(Node* node = origin->head; node != NULL; node = node->next_node) {
+        push_back(clone, node->key);
+    }
+}
+
+bool is_empty(List* list) {
     return list->head == NULL;
 }
 
@@ -30,29 +37,22 @@ int get_length(List* list) {
     return counter;
 }
 
-void push_back(List* list, unsigned int key) {
+void push_back(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
-        return;
     } else {
         list->last->next_node = (Node*)malloc(sizeof(Node));
         if(list->last->next_node == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->last->next_node);
         // 新しいノードをリストの最後のノードとつなぐ
         list->last->next_node->prev_node = list->last;
@@ -63,29 +63,22 @@ void push_back(List* list, unsigned int key) {
     }
 }
 
-void push_front(List* list, unsigned int key) {
+void push_front(List* list, uint32_t key) {
     if(is_empty(list)) {
         list->head = (Node*)malloc(sizeof(Node));
         if(list->head == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head);
         list->last = list->head;
         list->head->key = key;
-        return;
     } else {
         list->head->prev_node = (Node*)malloc(sizeof(Node));
         if(list->head->prev_node == NULL) {
-            puts("Failed to allocate memory");
+            fprintf(stderr, "Failed to allocate memory\n");
             exit(1);
         }
-#ifdef DEBUG
-        puts("malloc");
-#endif // DEBUG
         init_node(list->head->prev_node);
         // 新しいノードをリストの先頭のノードとつなぐ
         list->head->prev_node->next_node = list->head;
@@ -96,6 +89,19 @@ void push_front(List* list, unsigned int key) {
     }
 }
 
+void pop_front(List* list) {
+    if(is_empty(list))
+        return;
+    // 消すノードのポインタを保存してリストの先頭ノードを更新する
+    Node* target = list->head;
+    list->head = list->head->next_node;
+
+    // 消す要素と新しい先頭ノードを切り離す
+    list->head->prev_node = NULL;
+
+    free(target);
+}
+
 Node* securely_get_prev_node(Node* current_node) {
     if(current_node == NULL)
         return NULL;
@@ -103,51 +109,71 @@ Node* securely_get_prev_node(Node* current_node) {
         return current_node->prev_node;
 }
 
-unsigned int securely_get_value(Node* current_node) {
+Node* securely_get_next_node(Node* current_node) {
+    if(current_node == NULL)
+        return NULL;
+    else
+        return current_node->next_node;
+}
+
+uint32_t securely_get_value(Node* current_node) {
     if(current_node == NULL)
         return 0;
     else
         return current_node->key;
 }
 
+bool has_prev_prev_node(Node* node) {
+    return securely_get_prev_node(node->prev_node) != NULL;
+}
+
+bool has_next_next_node(Node* node) {
+    return securely_get_next_node(node->next_node) != NULL;
+}
+
 void release_list(List* list) {
     if(is_empty(list))
         return;
-    // リストの要素が一つしかないとき
-    if(list->head == list->last) {
-        free(list->head);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
-        return;
-    }
     // 先頭以外のすべてのノードを開放する
     for(Node* iter = list->last->prev_node; iter != NULL; iter = iter->prev_node) {
         free(iter->next_node);
-#ifdef DEBUG
-        puts("free");
-#endif // DEBUG
     }
     free(list->head);
-#ifdef DEBUG
-    puts("free");
-#endif // DEBUG
+    list->head = NULL;
+    list->last = NULL;
 }
 
-
-#ifdef DEBUG
-int main() {
-    List list;
-    init_list(&list);
-    printf("is_empty: %d\n", is_empty(&list));
-    push_back(&list, 100);
-    push_back(&list, 101);
-    push_front(&list, 102);
-    for(Node* iter = list.head; iter != NULL; iter = iter->next_node) {
-        printf("%u\n", iter->key);
+void debug_print_list(List* list) {
+    printf("  List:           %p\n", list);
+    printf("    head:  ");
+    print_address(list->head);
+    printf("    last:  ");
+    print_address(list->last);
+    printf("    value: 0x");
+    for(Node* node = list->head; node != NULL; node = node->next_node) {
+        printf(" %08x", node->key);
     }
-    printf("prev_node->key: %u\n", list.last->prev_node->key);
-    release_list(&list);
-    return 0;
+    puts("");
+    printf("    -----head-----\n");
+    for(Node* node = list->head; node != NULL; node = node->next_node) {
+        debug_print_node(node);
+    }
+    printf("    -----last-----\n");
 }
-#endif // DEBUG
+
+void debug_print_node(Node* node) {
+    printf("      Node: %p\n", node);
+    printf("        prev_node: ");
+    print_address(node->prev_node);
+    printf("        key:       0x%08x\n", node->key);
+    printf("        next_node: ");
+    print_address(node->next_node);
+}
+
+void print_address(void* pointer) {
+    if(pointer == NULL) {
+        printf("NULL\n");
+    } else {
+        printf("%p\n", pointer);
+    }
+}
